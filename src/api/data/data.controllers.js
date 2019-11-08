@@ -1,7 +1,6 @@
 'use strict'
 
 const { Data, validateData } = require('./data.model')
-const ISODate = new Date().toISOString()
 
 /**
  * @method index
@@ -38,9 +37,6 @@ exports.index = async (req, res, next) => {
         })
         .countDocuments()
 
-    console.log(total);
-
-
     // 数据
     const data = await Data
         .find({
@@ -65,21 +61,13 @@ exports.index = async (req, res, next) => {
 }
 
 /**
- * @method create
+ * @method onLED
  * @param { Object } req.body
  * @return { json }
- * @description 新建指定设备的数据信息 || public 
+ * @description 改变LED状态 || public 
  */
-exports.create = async (req, res, next) => {
-    const { error } = validateData({ macAddress: req.body.macAddress });
-    if (error) { return next(error) }
+exports.onLED = async (req, res, next) => {
+    require('../../services/mqtt').onLED(req.body)
 
-    const data = new Data({
-        ...req.body,
-        createdBy: req.user._id
-    })
-    const result = await data.save()
-    if (result) { require('../../services/mqtt').sendLEDData(result.data.l) }
-
-    res.json({ code: "000000", data: result })
+    res.json({ code: "000000" })
 }

@@ -7,6 +7,6 @@ const routeMW = require('../../middleware/routeMW')
 const router = new express.Router()
 
 router.post('/index', routeMW.aut, controller.index)
-router.post('/create', routeMW.aut, controller.create)
+router.post('/onLED', routeMW.aut, controller.onLED)
 
 module.exports = router

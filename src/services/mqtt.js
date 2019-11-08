@@ -12,7 +12,7 @@ const host = process.env.MQTT_HOST
 const clientId = process.env.MQTT_CLIENTID
 const { Data } = require('../api/data/data.model')
 
-// 实例化对象
+// MQTT client
 const client = mqtt.connect({
   port: port,
   protocol: 'mqtts',
@@ -27,68 +27,92 @@ const client = mqtt.connect({
 
 // 建立连接
 client.on('connect', () => {
-  console.log(chalk.black.bgBlue('MQTT connected to Mosca at ' + host + ' on port ' + port));
+  console.log(chalk.black.bgBlue(clientId + ' connected to Mosca on port ' + port));
 
-  // 订阅
-  client.subscribe('api-engine');
-  client.subscribe('dht11');
-  client.subscribe('image');
+  // 订阅#以下所有级别的topic
+  client.subscribe('api-engine/#');
+  client.subscribe('pi/dht11/#');
+  client.subscribe('pi/camera/#');
 });
 
 // 发送消息
 client.on('message', (topic, message) => {
-
   // message is Buffer
-  // console.log('Topic >> ', topic);
-  // console.log('Message >> ', message.toString());
 
-  if (topic === 'api-engine') {
-    // 订阅主题为api-engine
-    const macAddress = message.toString();
-    console.log('Mac Address >> ', macAddress);
+  switch (topic) {
 
-    // 发布rpi
-    client.publish('rpi', 'Got Mac Address: ' + macAddress);
-  } else if (topic === 'dht11') {
-    // 订阅主题为dht11
-    const data = JSON.parse(message.toString());
-    // 把数据插入数据库
-    Data.create(data, (err, data) => {
-      if (err) return console.error(err);
-      // 如果数据成功保存,log新的数据
-      console.log('Data Saved :', data.data);
-    });
-  } else if (topic === 'image') {
-    // 订阅主题为image
-    message = JSON.parse(message.toString());
-    // 将字符串转换为缓冲区
-    const image = Buffer.from(message.data.image, 'utf8');
-    const fname = message.data.id + '.jpg';
-    fs.writeFile(process.env.IMG_DIR + fname, image, "binary", function (err) {
-      if (err) {
-        console.log('[image]', 'save failed', err);
-      } else {
-        console.log('[image]', 'saved');
-      }
-    });
-    // 图片不会插入数据库,Gridfs会是个很好的选择 
-    delete message.data.image;
-    message.data.fname = fname;
-    // 为设备创建新的数据记录
-    Data.create(message, function (err, data) {
-      if (err) return console.error(err);
-      // 如果记录已成功保存,websockets将触发一条消息到web
-      // console.log('Data Saved :', data);
-    });
+    case 'api-engine/dht11/feedback': // 反馈
+      const dht11Mac = message.toString();
+      console.log('PI3_DHT11 Response >> ', dht11Mac);
+      client.publish('pi/dht11/feedback', 'API Got DHT11 Mac Address: ' + dht11Mac);
+      break;
 
-  } else {
-    console.log('Unknown topic', topic);
+    case 'api-engine/camera/feedback': // 反馈
+      const cameraMac = message.toString();
+      console.log('PI3_Camera Response >> ', cameraMac);
+      client.publish('pi/camera/feedback', 'API Got Camera Mac Address: ' + cameraMac);
+      break;
+
+    case 'pi/dht11/data':
+      const DHT11Data = JSON.parse(message.toString());
+      Data.create(DHT11Data, (err, data) => {
+        if (err) return console.error(err);
+        console.log('DHT11_Data Saved :', data.data);
+      });
+      break;
+
+    default:
+      break;
   }
 });
 
-// 发送LED数据
-exports.sendLEDData = (data) => {
-  console.log('Sending Data', data);
-  // 发布led
-  client.publish('led', data);
+// if (topic === 'camera') {
+//   message = JSON.parse(message.toString());
+//   // 将字符串转换为缓冲区
+//   const image = Buffer.from(message.data.image, 'utf8');
+//   const fname = message.data.id + '.jpg';
+//   fs.writeFile(process.env.IMG_DIR + fname, image, "binary", function (err) {
+//     if (err) {
+//       console.log('[camera]', 'save failed', err);
+//     } else {
+//       console.log('[camera]', 'saved');
+//     }
+//   });
+//   // 图片不会插入数据库,Gridfs会是个很好的选择 
+//   delete message.data.image;
+//   message.data.fname = fname;
+//   // 为设备创建新的数据记录
+//   Data.create(message, function (err, data) {
+//     if (err) return console.error(err);
+//     // 如果记录已成功保存,websockets将触发一条消息到web
+//     // console.log('Data Saved :', data);
+//   });
+// }
+
+
+exports.onDHT11 = (data) => {
+  if (data === true) {
+    client.publish('pi/dht11/start');
+  } else
+    if (data === false) {
+      client.publish('pi/dht11/stop');
+    }
+}
+
+exports.onLED = (data) => {
+  if (data.l === true) {
+    client.publish('pi/led/start');
+  } else
+    if (data.l === false) {
+      client.publish('pi/led/stop');
+    }
+}
+
+exports.onCamera = (data) => {
+  if (data === true) {
+    client.publish('pi/camera/start');
+  } else
+    if (data === false) {
+      client.publish('pi/camera/stop');
+    }
 }

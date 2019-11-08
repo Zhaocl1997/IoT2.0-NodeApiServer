@@ -23,6 +23,8 @@ const routeSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+}, {
+    versionKey: false
 })
 
 const Route = mongoose.model('Route', routeSchema)

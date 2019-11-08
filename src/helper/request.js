@@ -25,7 +25,7 @@ const options = {
     url: 'xxxxxxxx',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGJhOWNlNzNkNzNkZTA0ZTRkOTNmZjMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1NzI5MzUzMTAsImV4cCI6MTU3Mjk2NDExMH0.nu50g2PLBDnhoEpBZCJDDkcNyY5g3xMJMelp56fC3sA"
+        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGMyYTkzM2JjZDlmYjMxYjg4ZjE4NjMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1NzMwMzg5NTAsImV4cCI6MTU3MzA2Nzc1MH0.4DRvvbpTvyiXS3law062mEdn0P3ckj_Sy1cJ9_qPrEE"
     },
     json: "xxxxxx",
 };

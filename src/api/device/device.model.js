@@ -50,15 +50,21 @@ deviceScheme.statics.isExist = async (macAddress) => {
 }
 
 /**
- * 预保存钩：添加设备时,通过mac去数据库里寻找数据,如果有,将数据的createdBy绑上
+ * 预保存钩：根据状态决定设备开关
  */
 deviceScheme.pre('save', async function (next) {
     const device = this
-    const data = await Data.find({ macAddress: device.macAddress })
-    if (data) {
-        data.forEach(item => {
-            item.createdBy = device._id
-        })
+    switch (device.type) {
+        case 'sensor':
+            require('../../services/mqtt').onDHT11(device.status)
+            break;
+
+        case 'camera':
+
+            break;
+
+        default:
+            break;
     }
     next()
 })

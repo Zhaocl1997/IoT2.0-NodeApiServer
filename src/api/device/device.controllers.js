@@ -11,12 +11,13 @@ const { validateId } = require('../../helper/public')
  * @description 根据ID获取该用户的所有设备信息 || public 
  */
 exports.index = async (req, res, next) => {
-    const sortOrder = req.body.sortOrder
+    const sortOrder = req.body.sortOrder || -1
+    const sortField = req.body.sortField || "status"
     const filters = req.body.filters
     const reg = new RegExp(filters, 'i')
 
     let sortDevices
-    switch (req.body.sortField) {
+    switch (sortField) {
         case "createdBy":
             sortDevices = { createdBy: sortOrder }
             break;

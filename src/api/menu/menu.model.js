@@ -71,6 +71,7 @@ function validateMenu(menu) {
         icon: Joi.string().required().error(new Error('菜单图标路径不合法!')),
         index: Joi.string().required().error(new Error('菜单路由不合法!')),
         role: Joi.string().required().error(new Error('身份不合法!')),
+        subs: Joi.array().empty('')
     });
     return schema.validate(menu);
 }
