@@ -7,11 +7,7 @@ const mode = process.env.MODE
 
 server.listen(port, () => {
     console.log(
-        chalk
-            .black
-            .bgYellow(
-                'API connected to server in %s on port %d'
-            ),
+        chalk.black.bgYellow('API connected to server in %s on port %d'),
         mode,
         port
     )

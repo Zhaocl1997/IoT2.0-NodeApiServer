@@ -1,7 +1,5 @@
 'use strict'
 
-const Joi = require('@hapi/joi')
-
 // 获取当前时间
 function getnow() {
     let date_ob = new Date()
@@ -24,14 +22,7 @@ function getClientIp(req) {
         req.connection.socket.remoteAddress || '';
 }
 
-// 验证mongoID
-function validateId(id) {
-    const schema = Joi.string().required().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('ID不合法'))
-    return schema.validate(id);
-}
-
 module.exports = {
     getnow,
-    getClientIp,
-    validateId
+    getClientIp
 }

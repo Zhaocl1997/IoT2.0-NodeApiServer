@@ -25,7 +25,7 @@ const options = {
     url: 'xxxxxxxx',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGMyYTkzM2JjZDlmYjMxYjg4ZjE4NjMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1NzMwMzg5NTAsImV4cCI6MTU3MzA2Nzc1MH0.4DRvvbpTvyiXS3law062mEdn0P3ckj_Sy1cJ9_qPrEE"
+        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGMyYTkzM2JjZDlmYjMxYjg4ZjE4NjMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1NzMxODkzNjEsImV4cCI6MTU3MzIxODE2MX0.ILRXisW5OVZEuFLhNGiS8_rfwoAhKvhZiTyrC2i8Fp0"
     },
     json: "xxxxxx",
 };
@@ -47,25 +47,25 @@ for (let index = 10; index < 100; index++) {
             /**
              * device 
              */
-            deviceinfo.name = "device" + index
-            deviceinfo.macAddress = "A7:2C:6D:03:8C:" + index
-            deviceinfo.type = "camera"
-            deviceinfo.status = false
+            // deviceinfo.name = "device" + index
+            // deviceinfo.macAddress = "A7:2C:6D:03:8C:" + index
+            // deviceinfo.type = "camera"
+            // deviceinfo.status = false
 
-            options.url = "http://localhost:3000/api/v1/device/create"
-            options.json = deviceinfo
+            // options.url = "http://localhost:3000/api/v1/device/create"
+            // options.json = deviceinfo
 
             /**
              * user 
              */
-            // userinfo.name = "useruser" + index
-            // userinfo.password = "useruser" + index
-            // userinfo.email = "user" + index + "@qq.com"
-            // userinfo.phone = "122222222" + index
-            // userinfo.role = "user"
-            // userinfo.status = false
-            // options.url = "http://localhost:3000/api/v1/user/create"
-            // options.json = userinfo
+            userinfo.name = "useruser" + index
+            userinfo.password = "useruser" + index
+            userinfo.email = "user" + index + "@qq.com"
+            userinfo.phone = "122222222" + index
+            userinfo.role = "user"
+            userinfo.status = false
+            options.url = "http://localhost:3000/api/v1/user/create"
+            options.json = userinfo
 
             request(options, callback)
         }

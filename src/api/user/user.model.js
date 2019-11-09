@@ -1,10 +1,9 @@
 'use strict'
 
-const Joi = require('@hapi/joi')
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
-const { Device } = require('../device/device.model')
+const Device = require('../device/device.model')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -27,7 +26,6 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'user', 'student'],
         default: 'user'
     },
     status: {
@@ -54,8 +52,6 @@ userSchema.virtual('devices', {
 userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()
-
-
     // delete userObject.password
 
     return userObject
@@ -116,22 +112,6 @@ userSchema.pre('remove', async function (next) {
     next()
 })
 
-/**
- * 验证：Joi验证
- */
-function validateUser(user) {
-    const schema = Joi.object({
-        id: Joi.string(),
-        name: Joi.string().empty('').trim().lowercase().alphanum().min(6).max(12).error(new Error('用户名不合法')),
-        email: Joi.string().empty('').trim().lowercase().email().pattern(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/).error(new Error('邮箱不合法')),
-        phone: Joi.string().empty('').trim().pattern(/^[1][2-9][0-9]{9}$/).error(new Error('手机号不合法')),
-        password: Joi.string().empty('').min(9).max(16).error(new Error('密码不合法')),
-        role: Joi.string().default('user').error(new Error('用户角色不合法')),
-        status: Joi.boolean().default(true).error(new Error('用户状态不合法'))
-    });
-    return schema.validate(user);
-}
-
 const User = mongoose.model('User', userSchema)
 
-module.exports = { User, validateUser }
+module.exports = User

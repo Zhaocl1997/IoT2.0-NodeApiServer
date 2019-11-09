@@ -1,6 +1,5 @@
 'use strict'
 
-const Joi = require('@hapi/joi')
 const mongoose = require('mongoose')
 
 const dataSchema = new mongoose.Schema({
@@ -19,16 +18,6 @@ dataSchema.post('save', (doc) => {
     require('./data.socket').onSave(doc)
 })
 
-/**
- * 验证：Joi验证
- */
-function validateData(data) {
-    const schema = Joi.object({
-        macAddress: Joi.string().empty('').trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac地址不合法!')),
-    });
-    return schema.validate(data);
-}
-
 const Data = mongoose.model('Data', dataSchema)
 
-module.exports = { Data, validateData }
+module.exports = Data

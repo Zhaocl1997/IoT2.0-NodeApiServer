@@ -2,8 +2,7 @@
 
 const path = require('path');
 const svgCaptcha = require('svg-captcha');
-const { validateId } = require('../../helper/public')
-const { User, validateUser } = require('./user.model')
+const User = require('./user.model')
 const { svgOptions } = require('../../helper/config')
 
 /**
@@ -13,9 +12,6 @@ const { svgOptions } = require('../../helper/config')
  * @description 注册 || public 
  */
 exports.register = async (req, res, next) => {
-    const { error } = validateUser(req.body);
-    if (error) { return next(error) }
-
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
@@ -33,9 +29,6 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     // 验证验证码
     if (req.session.randomcode !== req.body.verifyCode) { throw new Error('验证码错误') }
-
-    const { error } = validateUser(req.body.email, req.body.phone, req.body.password);
-    if (error) { return next(error) }
 
     // 通过email/phone查找用户并生成令牌
     const user = await User.findByCredentials(req.body)
@@ -75,16 +68,14 @@ exports.captcha = async (req, res, next) => {
  * @description 获取所有用户信息 || admin
  */
 exports.index = async (req, res, next) => {
-    const sortOrder = req.body.sortOrder
+    const sortOrder = req.body.sortOrder || -1
+    const sortField = req.body.sortField || 'status'
     const filters = req.body.filters
     const reg = new RegExp(filters, 'i')
 
     // 按表头排序
     let sortUsers
-    switch (req.body.sortField) {
-        case "name":
-            sortUsers = { name: sortOrder }
-            break;
+    switch (sortField) {
         case "role":
             sortUsers = { role: sortOrder }
             break;
@@ -133,9 +124,6 @@ exports.index = async (req, res, next) => {
  * @description 创建新用户 || admin 
  */
 exports.create = async (req, res, next) => {
-    const { error } = validateUser(req.body);
-    if (error) { return next(error) }
-
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
@@ -151,9 +139,6 @@ exports.create = async (req, res, next) => {
  * @description 获取指定用户信息 || admin
  */
 exports.read = async (req, res, next) => {
-    const { error } = validateId(req.body.id);
-    if (error) { return next(error) }
-
     const user = await User.findById(req.body.id)
     if (!user) { throw new Error('用户不存在') }
     res.json({ code: '000000', data: user })
@@ -166,11 +151,6 @@ exports.read = async (req, res, next) => {
  * @description 更新用户 || admin 
  */
 exports.update = async (req, res, next) => {
-    const { IdError } = validateId(req.body.id);
-    if (IdError) { return next(error) }
-    const { error } = validateUser(req.body);
-    if (error) { return next(error) }
-
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
@@ -186,9 +166,6 @@ exports.update = async (req, res, next) => {
  * @description 删除指定用户 || admin
  */
 exports.delete = async (req, res, next) => {
-    const { error } = validateId(req.body.id);
-    if (error) { return next(error) }
-
     const user = await User.findByIdAndDelete(req.body.id)
     if (!user) { throw new Error('用户不存在') }
     await user.remove()

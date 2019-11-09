@@ -1,8 +1,7 @@
 'use strict'
 
-const Joi = require('@hapi/joi')
 const mongoose = require('mongoose')
-const { Data } = require('../data/data.model')
+const Data = require('../data/data.model')
 
 const deviceScheme = new mongoose.Schema({
     name: {
@@ -78,20 +77,6 @@ deviceScheme.pre('remove', async function (next) {
     next()
 })
 
-/**
- * 验证：Joi验证
- */
-function validateDevice(device) {
-    const schema = Joi.object({
-        id: Joi.string().empty('').trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID不合法!')),
-        name: Joi.string().empty('').trim().lowercase().min(5).max(12).error(new Error('设备名不合法!')),
-        macAddress: Joi.string().empty('').trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac地址不合法!')),
-        type: Joi.string().required().trim().error(new Error('设备类型地址不合法!')),
-        status: Joi.boolean().default(true).error(new Error('设备状态不合法!'))
-    });
-    return schema.validate(device);
-}
-
 const Device = mongoose.model('Device', deviceScheme)
 
-module.exports = { Device, validateDevice }
+module.exports = Device

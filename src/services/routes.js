@@ -5,7 +5,6 @@
 'use strict'
 
 module.exports = function (app) {
-
     //路由定义
     app.use('/api/v1/user', require('../api/user'))
     app.use('/api/v1/device', require('../api/device'))

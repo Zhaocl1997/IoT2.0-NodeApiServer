@@ -1,8 +1,6 @@
 'use strict'
 
-const Joi = require('@hapi/joi')
 const mongoose = require('mongoose')
-const { User } = require('../user/user.model')
 
 const roleSchema = new mongoose.Schema({
     name: {
@@ -13,12 +11,12 @@ const roleSchema = new mongoose.Schema({
         type: String,
         require: true
     },
-    user: {
+    number: {
         type: Number,
         default: 0
     },
     menu: {
-        type: Array
+        type: [mongoose.Schema.Types.ObjectId],
     },
     status: {
         type: Boolean,
@@ -34,12 +32,6 @@ const roleSchema = new mongoose.Schema({
  */
 roleSchema.virtual('users', {
     ref: 'User',
-    localField: 'name',
-    foreignField: 'role'
-})
-
-roleSchema.virtual('menus', {
-    ref: 'Menu',
     localField: 'name',
     foreignField: 'role'
 })

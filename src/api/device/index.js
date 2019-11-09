@@ -2,15 +2,16 @@
 
 const express = require('express')
 const controller = require('./device.controllers')
-const routeMW = require('../../middleware/routeMW')
+const { autMW } = require('../../middleware/routeMW')
+const { vDevMW, vIdMW } = require('../../middleware/validateMW')
 
 const router = new express.Router()
 
 // public
-router.post('/index', routeMW.aut, controller.index)
-router.post('/create', routeMW.aut, controller.create)
-router.post('/read', routeMW.aut, controller.read)
-router.post('/update', routeMW.aut, controller.update)
-router.post('/delete', routeMW.aut, controller.delete)
+router.post('/index', autMW, controller.index)
+router.post('/create', [vDevMW, autMW], controller.create)
+router.post('/read', [vIdMW, autMW], controller.read)
+router.post('/update', [vDevMW, autMW], controller.update)
+router.post('/delete', [vIdMW, autMW], controller.delete)
 
 module.exports = router

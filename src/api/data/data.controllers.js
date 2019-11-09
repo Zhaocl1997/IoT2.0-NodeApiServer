@@ -1,6 +1,6 @@
 'use strict'
 
-const { Data, validateData } = require('./data.model')
+const Data = require('./data.model')
 
 /**
  * @method index
@@ -15,10 +15,6 @@ exports.index = async (req, res, next) => {
     const startTime = req.body.startTime || '2018-10-23T12:16:46.121Z'
     const endTime = req.body.endTime || '2020-10-23T12:16:46.121Z'
     const macAddress = req.body.macAddress
-
-    // 验证用户提交数据是否合法
-    const { error } = validateData({ macAddress });
-    if (error) { return next(error) }
 
     // 数据数量
     const total = await Data
