@@ -1,7 +1,7 @@
 'use strict'
 
-const path = require('path');
-const svgCaptcha = require('svg-captcha');
+const path = require('path')
+const svgCaptcha = require('svg-captcha')
 const User = require('./user.model')
 const { svgOptions } = require('../../helper/config')
 
@@ -30,7 +30,7 @@ exports.login = async (req, res, next) => {
     // 验证验证码
     if (req.session.randomcode !== req.body.verifyCode) { throw new Error('验证码错误') }
 
-    // 通过email/phone查找用户并生成令牌
+    // 通过email/phone查找用户验证密码并生成令牌
     const user = await User.findByCredentials(req.body)
     const token = await user.generateAuthToken()
     res.json({ code: "000000", data: { token, user } })
@@ -55,7 +55,7 @@ exports.logout = async (req, res, next) => {
 exports.captcha = async (req, res, next) => {
     // 验证码，有两个属性，text是字符，data是svg代码
     svgCaptcha.loadFont(path.join(__dirname, process.env.SVG_DIR))
-    const svgCode = svgCaptcha.create(svgOptions);
+    const svgCode = svgCaptcha.create(svgOptions)
     // 保存到session,忽略大小写'eueh' 
     req.session.randomcode = svgCode.text.toLowerCase()
     res.json({ code: "000000", data: { img: svgCode.data } })
@@ -78,18 +78,18 @@ exports.index = async (req, res, next) => {
     switch (sortField) {
         case "role":
             sortUsers = { role: sortOrder }
-            break;
+            break
         case "createdAt":
             sortUsers = { createdAt: sortOrder }
-            break;
+            break
         case "updatedAt":
             sortUsers = { updatedAt: sortOrder }
-            break;
+            break
         case "status":
             sortUsers = { status: sortOrder }
-            break;
+            break
         default:
-            break;
+            break
     }
 
     const total = await User
@@ -112,7 +112,7 @@ exports.index = async (req, res, next) => {
         })
         .skip(parseInt((req.body.pagenum - 1) * req.body.pagerow))
         .limit(parseInt(req.body.pagerow))
-        .sort(sortUsers);
+        .sort(sortUsers)
 
     res.json({ code: "000000", data: { total, data } })
 }
@@ -127,7 +127,7 @@ exports.create = async (req, res, next) => {
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
-    const user = new User(req.body)
+    const user = await new User(req.body)
     await user.save()
     res.json({ code: "000000", data: user })
 }
@@ -136,7 +136,7 @@ exports.create = async (req, res, next) => {
  * @method read
  * @param { Object } req.body
  * @return { json }
- * @description 获取指定用户信息 || admin
+ * @description 获取指定用户 || admin
  */
 exports.read = async (req, res, next) => {
     const user = await User.findById(req.body.id)
@@ -155,6 +155,7 @@ exports.update = async (req, res, next) => {
     await User.isExist(req.body)
 
     const user = await User.findByIdAndUpdate(req.body.id, req.body, { new: true })
+    if (!user) { throw new Error('用户不存在') }
     await user.save()
     res.json({ code: "000000", data: user })
 }

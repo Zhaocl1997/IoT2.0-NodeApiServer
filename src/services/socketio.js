@@ -13,7 +13,7 @@ function onConnect(socket) {
 }
 
 // 暴露
-module.exports = function (io) {
+module.exports = (io) => {
     // 认证
     io.use(socketioJwt.authorize({
         secret: process.env.JWT_SERECT,
@@ -21,7 +21,7 @@ module.exports = function (io) {
     }))
 
     // 建立链接
-    io.on('connection', function (socket) {
+    io.on('connection', (socket) => {
         // console新的socket连接
         console.log(chalk.black.bgWhite('New WebSocket connection'))
 

@@ -8,7 +8,7 @@ const Joi = require('@hapi/joi')
 function vUser(user) {
     const schema = Joi.object({
         id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID不合法')),
-        name: Joi.string().trim().lowercase().alphanum().min(6).max(12).error(new Error('用户名称不合法')),
+        name: Joi.string().trim().lowercase().alphanum().min(3).max(12).error(new Error('用户名称不合法')),
         email: Joi.string().trim().lowercase().email().pattern(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/).error(new Error('用户邮箱不合法')),
         phone: Joi.string().trim().lowercase().pattern(/^[1][2-9][0-9]{9}$/).error(new Error('用户手机不合法')),
         password: Joi.string().trim().min(9).max(16).error(new Error('用户密码不合法')),
@@ -25,7 +25,7 @@ function vUser(user) {
 function vDev(device) {
     const schema = Joi.object({
         id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID不合法')),
-        name: Joi.string().trim().lowercase().alphanum().min(6).max(12).error(new Error('设备名称不合法')),
+        name: Joi.string().trim().lowercase().alphanum().min(3).max(8).error(new Error('设备名称不合法')),
         macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac不合法')),
         type: Joi.string().trim().lowercase().error(new Error('设备类型不合法')),
         status: Joi.boolean().error(new Error('设备状态不合法'))

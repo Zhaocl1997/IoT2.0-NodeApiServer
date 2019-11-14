@@ -12,43 +12,14 @@ exports.index = async (req, res, next) => {
     // 参数
     const pagenum = req.body.pagenum
     const pagerow = req.body.pagerow
-    const startTime = req.body.startTime || '2018-10-23T12:16:46.121Z'
-    const endTime = req.body.endTime || '2020-10-23T12:16:46.121Z'
     const macAddress = req.body.macAddress
 
     // 数据数量
-    const total = await Data
-        .find({
-            $and: [
-                {
-                    createdAt: {
-                        $gte: startTime,
-                        $lte: endTime
-                    }
-                },
-                {
-                    macAddress
-                }
-            ]
-        })
-        .countDocuments()
+    const total = await Data.find({ macAddress }).countDocuments()
 
     // 数据
     const data = await Data
-        .find({
-            $or: [
-                { macAddress },
-                {
-                    $and:
-                        [
-                            { macAddress },
-                            { createdAt: { $gt: startTime } },
-                            { createdAt: { $lt: endTime } }
-                        ]
-                }
-
-            ]
-        })
+        .find({ macAddress })
         .skip(parseInt((pagenum - 1) * pagerow))
         .limit(parseInt(pagerow))
         .sort({ createdAt: -1 })

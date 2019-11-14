@@ -25,7 +25,7 @@ const {
     accessLogStream
 } = require('../helper/config')
 
-module.exports = function (app) {
+module.exports = (app) => {
     // express Built-In 中间件
     app.use(express.json())
     app.use(express.urlencoded({ extended: true }))

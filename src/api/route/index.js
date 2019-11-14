@@ -8,6 +8,7 @@ const { vRouteMW, vIdMW } = require('../../middleware/validateMW')
 const router = new express.Router()
 
 // admin
+router.post('/options', [autMW, authMW], controller.options)
 router.post('/index', controller.index)
 router.post('/create', [vRouteMW, autMW, authMW], controller.create)
 router.post('/read', [vIdMW, autMW, authMW], controller.read)

@@ -11,7 +11,6 @@ const Role = require('../role/role.model')
  */
 exports.index = async (req, res, next) => {
     let data = []
-
     if (req.user.role === 'admin') {
         data = await Menu.find()
     } else {
