@@ -1,8 +1,17 @@
 {
-  "name": "iot-server",
+  "name": "iot-server2.0",
   "version": "1.0.0",
-  "description": "IoT-server",
-  "main": "index.js",
+  "description": "iot-server2.0",
+  "main": "src/index.js",
+  "private": true,
+  "author": {
+    "name": "zhaocl1997",
+    "email": "674351624@qq.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zhaocl1997/IoT2.0-server"
+  },
   "dependencies": {
     "@hapi/joi": "^16.1.4",
     "bcryptjs": "^2.4.3",
@@ -18,7 +27,6 @@
     "mongoose": "^5.7.5",
     "morgan": "^1.9.1",
     "mqtt": "^3.0.0",
-    "request": "^2.88.0",
     "socket.io": "^2.3.0",
     "socketio-jwt": "^4.5.0",
     "svg-captcha": "^1.4.0"
@@ -27,7 +35,8 @@
     "env-cmd": "^10.0.1",
     "jest": "^24.9.0",
     "nodemon": "^1.19.2",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "request": "^2.88.0"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -37,11 +46,6 @@
   },
   "jest": {
     "testEnvironment": "node"
-  },
-  "private": true,
-  "author": "zhaocl",
-  "engines": {
-    "node": ">=0.10.0"
   },
   "license": "ISC"
 }
