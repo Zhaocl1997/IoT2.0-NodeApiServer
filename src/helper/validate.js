@@ -7,12 +7,20 @@ const Joi = require('@hapi/joi')
  */
 function vUser(user) {
     const schema = Joi.object({
-        id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID不合法')),
         name: Joi.string().trim().lowercase().alphanum().min(3).max(12).error(new Error('用户名称不合法')),
         email: Joi.string().trim().lowercase().email().pattern(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/).error(new Error('用户邮箱不合法')),
         phone: Joi.string().trim().lowercase().pattern(/^[1][2-9][0-9]{9}$/).error(new Error('用户手机不合法')),
         password: Joi.string().trim().min(9).max(16).error(new Error('用户密码不合法')),
         role: Joi.string().trim().lowercase().error(new Error('用户角色不合法')),
+        gender: Joi.string().trim().lowercase().error(new Error('用户性别不合法')),
+        birth: Joi.object({
+            year: Joi.number().positive().integer().min(1970).max(2019).error(new Error('用户生日不合法')),
+            month: Joi.number().positive().integer().min(1).max(12).error(new Error('用户生日不合法')),
+            day: Joi.number().positive().integer().min(1).max(31).error(new Error('用户生日不合法')),
+        }),
+        area: Joi.array().length(3).items(Joi.string()).error(new Error('用户地址不合法')),
+        avatar: Joi.string().trim().lowercase().error(new Error('用户头像不合法')),
         status: Joi.boolean().error(new Error('用户状态不合法')),
         verifyCode: Joi.string().trim().lowercase().error(new Error('验证码不合法'))
     });
@@ -24,7 +32,7 @@ function vUser(user) {
  */
 function vDev(device) {
     const schema = Joi.object({
-        id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID不合法')),
         name: Joi.string().trim().lowercase().alphanum().min(3).max(8).error(new Error('设备名称不合法')),
         macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac不合法')),
         type: Joi.string().trim().lowercase().error(new Error('设备类型不合法')),
@@ -46,7 +54,7 @@ function vData(macAddress) {
  */
 function vMenu(menu) {
     const schema = Joi.object({
-        id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID不合法')),
         title: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('菜单标题不合法')),
         icon: Joi.string().trim().lowercase().required().error(new Error('菜单图标不合法')),
         index: Joi.string().trim().lowercase().required().error(new Error('菜单路由不合法')),
@@ -60,7 +68,7 @@ function vMenu(menu) {
  */
 function vRole(role) {
     const schema = Joi.object({
-        id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID不合法')),
         name: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('角色名称不合法')),
         describe: Joi.string().trim().lowercase().required().min(2).max(8).error(new Error('角色描述不合法')),
         number: Joi.number().error(new Error('角色数量不合法')),
@@ -75,7 +83,7 @@ function vRole(role) {
  */
 function vRoute(route) {
     const schema = Joi.object({
-        id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID不合法')),
         path: Joi.string().trim().lowercase().error(new Error('路由路径不合法')),
         name: Joi.string().trim().lowercase().error(new Error('路由名称不合法')),
         meta: Joi.object().error(new Error('路由数据不合法')),

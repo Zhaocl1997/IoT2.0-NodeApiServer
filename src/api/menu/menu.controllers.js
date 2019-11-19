@@ -37,15 +37,14 @@ exports.index = async (req, res, next) => {
  */
 exports.create = async (req, res, next) => {
     let menu
-    if (!req.body.id) {
+    if (!req.body._id) {
         menu = await new Menu(req.body).save()
     } else {
-        const subMenu = await Menu.findById(req.body.id)
-        delete req.body.id
+        const subMenu = await Menu.findById(req.body._id)
+        delete req.body._id
         subMenu.subs.push(req.body)
         menu = await subMenu.save()
     }
-
     res.json({ code: "000000", data: menu })
 }
 
@@ -56,7 +55,7 @@ exports.create = async (req, res, next) => {
  * @description 读取菜单信息 || admin
  */
 exports.read = async (req, res, next) => {
-    const menu = await Menu.findById(req.body.id)
+    const menu = await Menu.findById(req.body._id)
     if (!menu) { throw new Error('菜单不存在') }
     res.json({ code: '000000', data: menu })
 }
@@ -69,16 +68,16 @@ exports.read = async (req, res, next) => {
  */
 exports.update = async (req, res, next) => {
     let result
-    const menu = await Menu.findById(req.body.id)
+    const menu = await Menu.findById(req.body._id)
     if (menu) {
-        const menuOne = await Menu.findByIdAndUpdate(req.body.id, req.body, { new: true })
+        const menuOne = await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
         result = await menuOne.save()
     } else {
-        await Menu.findOne({ "subs._id": req.body.id }, (err, menu) => {
+        await Menu.findOne({ "subs._id": req.body._id }, (err, menu) => {
             if (err) { throw new Error(err) }
 
-            const updates = Object.keys(req.body).filter(key => key !== 'id')
-            const menuTwo = menu.subs.id(req.body.id)
+            const updates = Object.keys(req.body).filter(key => key !== '_id')
+            const menuTwo = menu.subs.id(req.body._id)
             updates.forEach((update) => menuTwo[update] = req.body[update])
             result = menu.save()
         })
@@ -95,13 +94,13 @@ exports.update = async (req, res, next) => {
  */
 exports.delete = async (req, res, next) => {
     let result
-    const menu = await Menu.findById(req.body.id)
+    const menu = await Menu.findById(req.body._id)
     if (menu) {
         result = await menu.remove()
     } else {
-        await Menu.findOne({ "subs._id": req.body.id }, async (err, menu) => {
+        await Menu.findOne({ "subs._id": req.body._id }, async (err, menu) => {
             if (err) { throw new Error(err) }
-            menu.subs.id(req.body.id).remove() // 不触发remove的钩子
+            menu.subs.id(req.body._id).remove() // 不触发remove的钩子
             result = await menu.save()
         })
     }

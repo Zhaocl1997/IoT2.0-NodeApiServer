@@ -13,7 +13,7 @@ const submenuSchema = new mongoose.Schema({
     },
     index: {
         type: String,
-        required: true,
+        required: true
     },
 }, {
     versionKey: false

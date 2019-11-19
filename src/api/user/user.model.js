@@ -24,6 +24,16 @@ const userSchema = new mongoose.Schema({
         unique: true,
         required: true
     },
+    gender: {
+        type: String,
+        default: '保密'
+    },
+    birth: {
+        type: Object
+    },
+    area: {
+        type: Array
+    },
     role: {
         type: String,
         default: 'user'
@@ -31,6 +41,9 @@ const userSchema = new mongoose.Schema({
     status: {
         type: Boolean,
         default: true
+    },
+    avatar: {
+        type: String
     }
 }, {
     timestamps: true,
@@ -87,7 +100,7 @@ userSchema.statics.findByCredentials = async (body) => {
  * 静态方法：通过凭据(email/phone)查找用户是否存在,解决email/phone唯一性问题,注册或新建和修改时使用
  */
 userSchema.statics.isExist = async (body) => {
-    const user = await User.findOne({ $and: [{ _id: { $ne: body.id }, $or: [{ phone: body.phone }, { email: body.email }] }] })
+    const user = await User.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ phone: body.phone }, { email: body.email }] }] })
     if (user) { throw new Error('用户已存在') }
     return user
 }

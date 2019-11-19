@@ -1,9 +1,10 @@
 'use strict'
 
-const path = require('path')
 const svgCaptcha = require('svg-captcha')
 const User = require('./user.model')
-const { svgOptions } = require('../../helper/config')
+const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
+const sharp = require('sharp')
+const fs = require('fs')
 
 /**
  * @method register
@@ -54,11 +55,33 @@ exports.logout = async (req, res, next) => {
  */
 exports.captcha = async (req, res, next) => {
     // 验证码，有两个属性，text是字符，data是svg代码
-    svgCaptcha.loadFont(path.join(__dirname, process.env.SVG_DIR))
+    svgCaptcha.loadFont(svgPath)
     const svgCode = svgCaptcha.create(svgOptions)
     // 保存到session,忽略大小写'eueh' 
     req.session.randomcode = svgCode.text.toLowerCase()
     res.json({ code: "000000", data: { img: svgCode.data } })
+}
+
+/**
+ * @method avatar
+ * @param { form-data }
+ * @return { json }
+ * @description 上传头像 || public 
+ */
+exports.avatar = async (req, res, next) => {
+    const avatarName = `${req.user._id}.png`
+    const buffer = await sharp(req.file.buffer).resize(250, 250).png().toBuffer()
+
+    fs.writeFile(
+        avatarPath + avatarName,
+        buffer,
+        "binary",
+        (err) => {
+            if (err) throw err;
+            req.user.avatar = process.env.SERVER_URL + 'avatar/' + avatarName
+            req.user.save()
+            res.json({ code: "000000" })
+        })
 }
 
 /**
@@ -139,8 +162,7 @@ exports.create = async (req, res, next) => {
  * @description 获取指定用户 || admin
  */
 exports.read = async (req, res, next) => {
-    const user = await User.findById(req.body.id)
-    if (!user) { throw new Error('用户不存在') }
+    const user = await User.findById(req.user._id, '-status -password -createdAt -updatedAt')
     res.json({ code: '000000', data: user })
 }
 
@@ -154,7 +176,7 @@ exports.update = async (req, res, next) => {
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
-    const user = await User.findByIdAndUpdate(req.body.id, req.body, { new: true })
+    const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
     if (!user) { throw new Error('用户不存在') }
     await user.save()
     res.json({ code: "000000", data: user })
@@ -167,7 +189,7 @@ exports.update = async (req, res, next) => {
  * @description 删除指定用户 || admin
  */
 exports.delete = async (req, res, next) => {
-    const user = await User.findByIdAndDelete(req.body.id)
+    const user = await User.findByIdAndDelete(req.body._id)
     if (!user) { throw new Error('用户不存在') }
     await user.remove()
     res.json({ code: '000000', data: user })

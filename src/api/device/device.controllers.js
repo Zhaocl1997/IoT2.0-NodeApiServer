@@ -122,7 +122,7 @@ exports.create = async (req, res, next) => {
  * @description 读取指定用户的指定设备信息 || public
  */
 exports.read = async (req, res, next) => {
-    const device = await Device.findOne({ $and: [{ _id: req.body.id, createdBy: req.user._id }] })
+    const device = await Device.findOne({ $and: [{ _id: req.body._id, createdBy: req.user._id }] })
     if (!device) { throw new Error('设备不存在') }
     res.json({ code: '000000', data: device })
 }
@@ -135,10 +135,10 @@ exports.read = async (req, res, next) => {
  */
 exports.update = async (req, res, next) => {
     // 根据macAddress查找用户 解决macAddress唯一问题
-    const oldDevice = await Device.findOne({ $and: [{ _id: { $ne: req.body.id }, macAddress: req.body.macAddress }] })
+    const oldDevice = await Device.findOne({ $and: [{ _id: { $ne: req.body._id }, macAddress: req.body.macAddress }] })
     if (oldDevice) { throw new Error('设备已存在') }
 
-    const device = await Device.findByIdAndUpdate(req.body.id, req.body, { new: true })
+    const device = await Device.findByIdAndUpdate(req.body._id, req.body, { new: true })
     await device.save()
     res.json({ code: "000000", data: device })
 }
@@ -150,7 +150,7 @@ exports.update = async (req, res, next) => {
  * @description 删除指定用户的指定设备信息 || public
  */
 exports.delete = async (req, res, next) => {
-    const device = await Device.findOneAndDelete({ $and: [{ _id: req.body.id, createdBy: req.user._id }] })
+    const device = await Device.findOneAndDelete({ $and: [{ _id: req.body._id, createdBy: req.user._id }] })
     if (!device) { throw new Error('设备不存在') }
     res.json({ code: "000000", data: device })
 }

@@ -7,6 +7,13 @@
 const path = require('path')
 const fs = require('fs')
 
+// 路径
+const staticPath = path.join(__dirname, process.env.STATIC_DIR)
+const logPath = path.join(__dirname, process.env.ACCESSLOG_DIR)
+const svgPath = path.join(__dirname, process.env.SVG_DIR)
+const cameraPath = path.join(__dirname, process.env.CAMERA_DIR)
+const avatarPath = path.join(__dirname, process.env.AVATAR_DIR)
+
 // app静态文件配置
 const staticOptions = {
     dotfiles: 'ignore',
@@ -19,11 +26,10 @@ const staticOptions = {
         res.set('x-timestamp', Date.now())
     }
 }
-const staticPath = path.join(__dirname, process.env.STATIC_DIR)
 
 // 访问日志配置
 const accessLogStream = fs.createWriteStream(
-    path.join(__dirname, process.env.ACCESSLOG_DIR),
+    logPath,
     { flags: "a" }
 )
 
@@ -45,5 +51,8 @@ module.exports = {
     staticOptions,
     staticPath,
     accessLogStream,
-    svgOptions
+    svgOptions,
+    svgPath,
+    cameraPath,
+    avatarPath
 }

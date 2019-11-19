@@ -48,7 +48,7 @@ exports.create = async (req, res, next) => {
  * @description admin
  */
 exports.read = async (req, res, next) => {
-    const role = await Role.findById(req.body.id)
+    const role = await Role.findById(req.body._id)
     res.json({ code: '000000', data: role })
 }
 
@@ -59,7 +59,7 @@ exports.read = async (req, res, next) => {
  * @description admin
  */
 exports.update = async (req, res, next) => {
-    const role = await Role.findByIdAndUpdate(req.body.id, req.body, { new: true })
+    const role = await Role.findByIdAndUpdate(req.body._id, req.body, { new: true })
     await role.save()
     res.json({ code: "000000", data: role })
 }
@@ -71,7 +71,7 @@ exports.update = async (req, res, next) => {
  * @description admin
  */
 exports.delete = async (req, res, next) => {
-    const role = await Role.findByIdAndDelete(req.body.id)
+    const role = await Role.findByIdAndDelete(req.body._id)
     await role.remove()
     res.json({ code: "000000", data: role })
 }

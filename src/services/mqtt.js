@@ -11,6 +11,7 @@ const port = process.env.MQTT_PORT
 const host = process.env.MQTT_HOST
 const clientId = process.env.MQTT_CLIENTID
 const Data = require('../api/data/data.model')
+const { cameraPath } = require('../helper/config')
 
 // MQTT client
 const client = mqtt.connect({
@@ -65,16 +66,20 @@ client.on('message', (topic, message) => {
       const cameraData = JSON.parse(message.toString())
       const image = Buffer.from(cameraData.data.image, 'utf8')
       const fname = cameraData.data.id + '.jpg'
-      fs.writeFile(process.env.IMG_DIR + fname, image, "binary", (err) => {
-        if (err) {
-          console.log('[camera]', 'save failed', err)
-        } else {
+
+      fs.writeFile(
+        cameraPath + fname,
+        image,
+        "binary",
+        (err) => {
+          if (err) throw err;
           console.log('[camera]', 'saved')
-        }
-      })
+        })
+
       delete cameraData.data.image
       delete cameraData.data.id
       cameraData.data.fname = fname
+      
       Data.create(cameraData, (err, data) => {
         if (err) return console.error(err)
         console.log('Camera_Data Saved :', data.data)

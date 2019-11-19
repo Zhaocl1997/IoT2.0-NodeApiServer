@@ -10,11 +10,13 @@ const { getnow } = require('../helper/public')
 
 
 function loggerMW(req, res, next) {
-    console.log(
-        chalk.redBright(`[请求时间]: ${getnow()}`),
-        chalk.greenBright(`[请求地址]: ${req.originalUrl}`),
-        chalk.cyanBright(`[请求内容]: ${JSON.stringify(req.body)}`),
-    )
+    //if (req.method === 'POST') {
+        console.log(
+            chalk.redBright(`[请求时间]: ${getnow()}`),
+            chalk.greenBright(`[请求地址]: ${req.originalUrl}`),
+            chalk.cyanBright(`[请求内容]: ${JSON.stringify(req.body)}`)
+        )
+    //}
     next()
 }
 
@@ -46,13 +48,13 @@ function sessionMW() {
         secret: process.env.SESSION_SERECT,
         resave: false,   // 强制将会话保存回会话存储，即使在请求期间从未修改过会话也是如此
         saveUninitialized: false, // 强制将“未初始化”的会话保存到存储中
-        // 当会话是新会话但未修改时该会话并未初始化
-        cookie: {
-            domain: "",
-            path: "/",
-            maxAge: 1000 * 60 * 60 * 24 * 7,
-            // secure: true    // 必须是https才可以启用
-        }
+        //当会话是新会话但未修改时该会话并未初始化
+        // cookie: {
+        //     domain: "",
+        //     path: "/",
+        //     maxAge: 1000 * 60 * 60 * 24 * 7,
+        //     // secure: true    // 必须是https才可以启用
+        // }
     })
 }
 
