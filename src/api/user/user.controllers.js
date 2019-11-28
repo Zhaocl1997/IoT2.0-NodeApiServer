@@ -5,21 +5,9 @@ const User = require('./user.model')
 const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
 const sharp = require('sharp')
 const fs = require('fs')
+const zlib = require('zlib')
+const request = require('request')
 
-/**
- * @method register
- * @param { Object } req.body
- * @return { json }
- * @description 注册 || public 
- */
-exports.register = async (req, res, next) => {
-    // 根据email或phone查找用户 解决email/phone唯一问题
-    await User.isExist(req.body)
-
-    const user = new User(req.body)
-    await user.save()
-    res.json({ code: "000000", data: user })
-}
 
 /**
  * @method login
@@ -28,13 +16,8 @@ exports.register = async (req, res, next) => {
  * @description 登录 || public 
  */
 exports.login = async (req, res, next) => {
-    // 验证验证码
-    if (req.session.randomcode !== req.body.verifyCode) { throw new Error('验证码错误') }
-
-    // 通过email/phone查找用户验证密码并生成令牌
-    const user = await User.findByCredentials(req.body)
-    const token = await user.generateAuthToken()
-    res.json({ code: "000000", data: { token, user } })
+    const token = await req.user.generateAuthToken()
+    res.json({ code: "000000", data: { token, user: req.user } })
 }
 
 /**
@@ -78,10 +61,35 @@ exports.avatar = async (req, res, next) => {
         "binary",
         (err) => {
             if (err) throw err;
-            req.user.avatar = process.env.SERVER_URL + 'avatar/' + avatarName
+            req.user.avatar = process.env.SERVER_URL + '/avatar/' + avatarName
             req.user.save()
             res.json({ code: "000000" })
         })
+}
+
+/**
+ * @method weather
+ * @param { city }
+ * @return { json }
+ * @description 获取天气 || public 
+ */
+exports.weather = (req, res, next) => {
+    const url = encodeURI('http://wthrcdn.etouch.cn/weather_mini?city=' + req.body.city)
+
+    request({ url, json: true, encoding: null }, (e, { body }) => {
+        if (e) res.json({ code: "999999", message: '天气请求失败' })
+        zlib.unzip(body, (err, buffer) => {
+            if (err) res.json({ code: "999999", message: '天气解压缩失败' })
+
+            const response = JSON.parse(buffer.toString())
+            if (response.status === 1002) {
+                res.json({ code: "999999", message: '很抱歉，您所选择的区域暂时不支持天气预报~' })
+            } else {
+                const result = response.data.forecast[0]
+                res.json({ code: "000000", data: result })
+            }
+        });
+    });
 }
 
 /**
@@ -162,8 +170,7 @@ exports.create = async (req, res, next) => {
  * @description 获取指定用户 || admin
  */
 exports.read = async (req, res, next) => {
-    const user = await User.findById(req.user._id, '-status -password -createdAt -updatedAt')
-    res.json({ code: '000000', data: user })
+    res.json({ code: '000000', data: req.user })
 }
 
 /**
@@ -177,7 +184,6 @@ exports.update = async (req, res, next) => {
     await User.isExist(req.body)
 
     const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
-    if (!user) { throw new Error('用户不存在') }
     await user.save()
     res.json({ code: "000000", data: user })
 }
@@ -190,7 +196,7 @@ exports.update = async (req, res, next) => {
  */
 exports.delete = async (req, res, next) => {
     const user = await User.findByIdAndDelete(req.body._id)
-    if (!user) { throw new Error('用户不存在') }
+    if (!user) throw new Error('用户不存在')
     await user.remove()
     res.json({ code: '000000', data: user })
 }

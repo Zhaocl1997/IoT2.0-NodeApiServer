@@ -57,31 +57,31 @@ client.on('message', (topic, message) => {
     case 'pi/dht11/data':
       const DHT11Data = JSON.parse(message.toString())
       Data.create(DHT11Data, (err, data) => {
-        if (err) return console.error(err)
+        if (err) throw new Error(err)
         console.log('DHT11_Data Saved :', data.data)
       })
       break
 
     case 'pi/camera/data':
       const cameraData = JSON.parse(message.toString())
-      const image = Buffer.from(cameraData.data.image, 'utf8')
-      const fname = cameraData.data.id + '.jpg'
+      // const image = Buffer.from(cameraData.data.image, 'utf8')
+      // const fname = cameraData.data.id + '.jpg'
 
-      fs.writeFile(
-        cameraPath + fname,
-        image,
-        "binary",
-        (err) => {
-          if (err) throw err;
-          console.log('[camera]', 'saved')
-        })
+      // fs.writeFile(
+      //   cameraPath + fname,
+      //   image,
+      //   "binary",
+      //   (err) => {
+      //     if (err) throw err;
+      //     console.log('[camera]', 'saved')
+      //   })
 
-      delete cameraData.data.image
-      delete cameraData.data.id
-      cameraData.data.fname = fname
-      
+      // delete cameraData.data.image
+      // delete cameraData.data.id
+      // cameraData.data.fname = fname
+
       Data.create(cameraData, (err, data) => {
-        if (err) return console.error(err)
+        if (err) throw new Error(err)
         console.log('Camera_Data Saved :', data.data)
       })
       break

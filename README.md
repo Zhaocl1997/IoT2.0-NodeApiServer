@@ -1,6 +1,8 @@
 IoT2.0-Server 
 ===========================
 
+
+
 ## Introduction
 
 ### Functionality
@@ -20,52 +22,83 @@ IoT2.0-Server
 ### Structure
 
 ```
-│  app.js   // app
-│  index.js // entry
+│  app.js
+│  index.js
+│
 ├─api
 │  ├─data
 │  │      data.controllers.js
 │  │      data.model.js
 │  │      data.socket.js
 │  │      index.js
+│  │
 │  ├─device
 │  │      device.controllers.js
 │  │      device.model.js
 │  │      index.js
+│  │
 │  ├─menu
 │  │      index.js
 │  │      menu.controllers.js
 │  │      menu.model.js
+│  │
 │  ├─role
 │  │      index.js
 │  │      role.controllers.js
 │  │      role.model.js
+│  │
 │  ├─route
 │  │      index.js
 │  │      route.controllers.js
 │  │      route.model.js
+│  │
 │  └─user
 │          index.js
 │          user.controllers.js
 │          user.model.js
-├─assets
-│  ├─fonts
-│  └─img
+│
 ├─helper
-│      config.js    // config for express middleware
-│      public.js    // public function
-│      request.js   // request package used for development
-│      validate.js  // Joi validate
+│      config.js
+│      public.js
+│      request.js
+│      validate.js
+│
 ├─middleware
-│      appMW.js     // app middleware
-│      routeMW.js   // route middleware
-│      validateMW.js    // validate middleware
-└─services
-        express.js
-        mongo.js
-        mqtt.js
-        routes.js
-        socketio.js
+│  │  admin.js
+│  │  app.js
+│  │  base.js
+│  │
+│  ├─auth
+│  │      authentication.js
+│  │      authorization.js
+│  │      login.js
+│  │      register.js
+│  │
+│  └─validate
+│          avatar.js
+│          status.js
+│          validate.js
+│
+├─services
+│      express.js
+│      mongo.js
+│      mqtt.js
+│      routes.js
+│      socketio.js
+│
+└─static
+    ├─avatar
+    │      5dc65c6dea686501bcc47a18.png
+    │
+    ├─camera
+    │      2019_11_15_08_54_41_b8-27-eb-e8-70-24.jpg
+    │
+    ├─fonts
+    │      Hack-Regular.ttf
+    │      SegoeUISoundlines.ttf
+    │
+    └─logs
+            access.log
 ```
 
 ### Usage
@@ -122,5 +155,7 @@ introduced by my dad to build my first own project.
 By now, I'm still working on mobile and details in **IoT2.0**. There are a lot of things can be done, problems waiting for me to solve, UI stuff etc. Thera can be features in my project, I'm starting to implent them one by one. There is a lot in the future.
 
 ### Contact
+
+<h2 id="yuMing">网站与域名</h2>
 
 [Github](https://github.com/Zhaocl1997)

@@ -1,7 +1,8 @@
 'use strict'
 
 const multer = require('multer')
-const { avatarPath } = require('../helper/config')
+const { avatarPath } = require('../../helper/config')
+const base = require('../base')
 
 const storage = multer.diskStorage({
     destination(req, file, cb) {
@@ -31,6 +32,6 @@ const avatar = multer({
     fileFilter: fileFilter
 }).single('avatar')
 
-module.exports = {
-    avatar
-}
+const avatarMiddleWare = [base, avatar]
+
+module.exports = avatarMiddleWare

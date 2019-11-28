@@ -16,7 +16,7 @@ const roleSchema = new mongoose.Schema({
         default: 0
     },
     menu: {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: Array,
     },
     status: {
         type: Boolean,

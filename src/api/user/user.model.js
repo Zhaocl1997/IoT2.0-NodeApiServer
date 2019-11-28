@@ -1,9 +1,11 @@
 'use strict'
 
 const mongoose = require('mongoose')
+const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const Device = require('../device/device.model')
+const { avatarPath } = require('../../helper/config')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -65,7 +67,8 @@ userSchema.virtual('devices', {
 userSchema.methods.toJSON = function () {
     const user = this
     const userObject = user.toObject()
-    // delete userObject.password
+
+    delete userObject.password
 
     return userObject
 }
@@ -81,18 +84,29 @@ userSchema.methods.generateAuthToken = async function () {
             role: user.role
         },
         process.env.JWT_SERECT,
-        { expiresIn: process.env.JWT_EXPIRE })
-
+        { expiresIn: process.env.JWT_EXPIRE }
+    )
     return token
 }
 
 /**
  * 静态方法：通过凭据(email/phone)查找用户并验证密码,登录使用
  */
-userSchema.statics.findByCredentials = async (body) => {
-    const user = await User.findOne({ $or: [{ email: body.email }, { phone: body.phone }] })
+userSchema.statics.findByCredentialsAndCheckPass = async (body) => {
+    const user = await User.findOne(
+        {
+            $or:
+                [
+                    { email: body.email },
+                    { phone: body.phone }
+                ]
+        },
+        '_id name role status password area'
+    )
+    if (!user) throw new Error('您的帐号不存在哦~')
+
     const isMatch = await bcrypt.compare(body.password, user.password)
-    if (!isMatch) { throw new Error('密码错误') }
+    if (!isMatch) throw new Error('您的密码输入错误~')
     return user
 }
 
@@ -101,7 +115,7 @@ userSchema.statics.findByCredentials = async (body) => {
  */
 userSchema.statics.isExist = async (body) => {
     const user = await User.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ phone: body.phone }, { email: body.email }] }] })
-    if (user) { throw new Error('用户已存在') }
+    if (user) { throw new Error('用户已存在~') }
     return user
 }
 
@@ -117,11 +131,19 @@ userSchema.pre('save', async function (next) {
 })
 
 /**
- * 预保存钩：删除用户时,同时删除用户的设备
+ * 预保存钩：删除用户时,同时删除用户的设备和头像文件
  */
 userSchema.pre('remove', async function (next) {
     const user = this
+    const avatarName = `${user._id}.png`
     await Device.deleteMany({ createdBy: user._id })
+
+    if (user.avatar) {
+        fs.unlink(avatarPath + avatarName, (err) => {
+            if (err) throw err;
+        })
+    }
+    
     next()
 })
 

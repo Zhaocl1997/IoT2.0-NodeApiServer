@@ -6,17 +6,17 @@
 
 const chalk = require('chalk')
 const session = require('express-session')
-const { getnow } = require('../helper/public')
+const { getNow } = require('../helper/public')
 
 
 function loggerMW(req, res, next) {
-    //if (req.method === 'POST') {
+    if (req.method === 'POST') {
         console.log(
-            chalk.redBright(`[请求时间]: ${getnow()}`),
+            chalk.redBright(`[请求时间]: ${getNow()}`),
             chalk.greenBright(`[请求地址]: ${req.originalUrl}`),
             chalk.cyanBright(`[请求内容]: ${JSON.stringify(req.body)}`)
         )
-    //}
+    }
     next()
 }
 

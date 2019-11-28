@@ -2,18 +2,19 @@
 
 const express = require('express')
 const controller = require('./menu.controllers')
-const { autMW, authMW } = require('../../middleware/routeMW')
-const { vMenuMW, vIdMW } = require('../../middleware/validateMW')
+const admin = require('../../middleware/admin')
+const base = require('../../middleware/base')
+const { validateMenuMiddleWare, validateIDMiddleWare } = require('../../middleware/validate/validate')
 
 const router = new express.Router()
 
 // public
-router.post('/index', autMW, controller.index)
+router.post('/index', base, controller.index)
 
 // admin
-router.post('/create', [vMenuMW, autMW, authMW], controller.create)
-router.post('/read', [vIdMW, autMW, authMW], controller.read)
-router.post('/update', [vMenuMW, autMW, authMW], controller.update)
-router.post('/delete', [vIdMW, autMW, authMW], controller.delete)
+router.post('/create', [admin, validateMenuMiddleWare], controller.create)
+router.post('/read', [admin, validateIDMiddleWare], controller.read)
+router.post('/update', [admin, validateMenuMiddleWare], controller.update)
+router.post('/delete', [admin, validateIDMiddleWare], controller.delete)
 
 module.exports = router

@@ -2,17 +2,19 @@
 
 const express = require('express')
 const controller = require('./route.controllers')
-const { autMW, authMW } = require('../../middleware/routeMW')
-const { vRouteMW, vIdMW } = require('../../middleware/validateMW')
+const admin = require('../../middleware/admin')
+const { validateRouteMiddleWare, validateIDMiddleWare } = require('../../middleware/validate/validate')
 
 const router = new express.Router()
 
-// admin
-router.post('/options', [autMW, authMW], controller.options)
+// public 
 router.post('/index', controller.index)
-router.post('/create', [vRouteMW, autMW, authMW], controller.create)
-router.post('/read', [vIdMW, autMW, authMW], controller.read)
-router.post('/update', [vRouteMW, autMW, authMW], controller.update)
-router.post('/delete', [vIdMW, autMW, authMW], controller.delete)
+
+// admin
+router.post('/options', admin, controller.options)
+router.post('/create', [admin, validateRouteMiddleWare], controller.create)
+router.post('/read', [admin, validateIDMiddleWare], controller.read)
+router.post('/update', [admin, validateRouteMiddleWare], controller.update)
+router.post('/delete', [admin, validateIDMiddleWare], controller.delete)
 
 module.exports = router

@@ -2,6 +2,7 @@
 
 const Menu = require('./menu.model')
 const Role = require('../role/role.model')
+const fun = require('../../helper/public')
 
 /**
  * @method index
@@ -10,23 +11,32 @@ const Role = require('../role/role.model')
  * @description 根据用户角色查询相应菜单 || public
  */
 exports.index = async (req, res, next) => {
-    let data = []
-    if (req.user.role === 'admin') {
-        data = await Menu.find()
-    } else {
-        const result = await Role.findOne({ name: req.user.role }, 'menu -_id')
-        for (let i = 0; i < result.menu.length; i++) {
-            const menuOneId = result.menu[i];
-            const menuOne = await Menu.findById(menuOneId)
-            if (menuOne) {
-                menuOne.subs.filter(menuTwo => {
-                    menuTwo._id !== result.menu
-                })
-                data.push(menuOne)
-            }
-        }
-    }
-    res.json({ code: "000000", data: data })
+    const menu = await Menu.find()
+
+    // const result = await Role.findOne({ name: req.user.role }, 'menu -_id')
+    // const userPower = result.menu
+    // //console.log(userPower);
+
+    // let arr = []
+    // for (let i = 0; i < menu.length; i++) {
+    //     let menuOne = menu[i];
+
+    //     for (let j = 0; j < menuOne.subs.length; j++) {
+    //         let menuTwo = menuOne.subs[j];
+
+    //         for (let k = 0; k < userPower.length; k++) {
+    //             let id = userPower[k];
+
+    //             if (menuTwo._id.toString() === id) {
+    //                 arr.push(menuTwo)
+    //             }
+    //         }
+    //     }
+    //     menuOne.subs = arr
+    // }
+    //console.log(arr);
+
+    res.json({ code: "000000", data: menu })
 }
 
 /**

@@ -41,7 +41,7 @@ const svgOptions = {
     color: true, // 验证码的字符是否有颜色，默认没有，如果设定了背景，则默认有
     background: "#f4f3f2", // 验证码图片背景颜色   
 
-    width: 120,
+    width: 130,
     height: 40,
     fontSize: 36,
     charPreset: "abcdefghijklmnpqrstuvwxyz1234567890"

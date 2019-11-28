@@ -2,24 +2,29 @@
 
 const express = require('express')
 const controller = require('./user.controllers')
-const { autMW, authMW, uSMW, rSMW } = require('../../middleware/routeMW')
-const { vUserMW, vIdMW } = require('../../middleware/validateMW')
-const { avatar } = require('../../middleware/upload')
+const registerMiddleWare = require('../../middleware/auth/register')
+const loginMiddleWare = require('../../middleware/auth/login')
+const avatarMiddleWare = require('../../middleware/validate/avatar')
+const admin = require('../../middleware/admin')
+const base = require('../../middleware/base')
+const { validateUserMiddleWare, validateIDMiddleWare } = require('../../middleware/validate/validate')
 
 const router = new express.Router()
 
 // public
-router.post('/register', vUserMW, controller.register)
-router.post('/login', [vUserMW, rSMW, uSMW], controller.login)
+router.post('/register', registerMiddleWare, controller.create)
+router.post('/login', loginMiddleWare, controller.login)
 router.post('/logout', controller.logout)
 router.post('/captcha', controller.captcha)
-router.post('/avatar', [autMW, avatar], controller.avatar)
-router.post('/read', [vIdMW, autMW], controller.read)
-router.post('/update', [vUserMW, autMW], controller.update)
+
+router.post('/avatar', [base, avatarMiddleWare], controller.avatar)
+router.post('/read', [base, validateIDMiddleWare], controller.read)
+router.post('/update', [base, validateUserMiddleWare], controller.update)
+router.post('/weather', base, controller.weather)
 
 // admin
-router.post('/index', [autMW, authMW], controller.index)
-router.post('/create', [vUserMW, autMW, authMW], controller.create)
-router.post('/delete', [vIdMW, autMW, authMW], controller.delete)
+router.post('/index', admin, controller.index)
+router.post('/create', [admin, validateUserMiddleWare], controller.create)
+router.post('/delete', [admin, validateIDMiddleWare], controller.delete)
 
 module.exports = router

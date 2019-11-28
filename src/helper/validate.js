@@ -7,22 +7,22 @@ const Joi = require('@hapi/joi')
  */
 function vUser(user) {
     const schema = Joi.object({
-        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID不合法')),
-        name: Joi.string().trim().lowercase().alphanum().min(3).max(12).error(new Error('用户名称不合法')),
-        email: Joi.string().trim().lowercase().email().pattern(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/).error(new Error('用户邮箱不合法')),
-        phone: Joi.string().trim().lowercase().pattern(/^[1][2-9][0-9]{9}$/).error(new Error('用户手机不合法')),
-        password: Joi.string().trim().min(9).max(16).error(new Error('用户密码不合法')),
-        role: Joi.string().trim().lowercase().error(new Error('用户角色不合法')),
-        gender: Joi.string().trim().lowercase().error(new Error('用户性别不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID字段格式错误')),
+        name: Joi.string().trim().lowercase().min(3).max(12).error(new Error('用户名称字段格式错误')),
+        email: Joi.string().trim().lowercase().email().pattern(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/).error(new Error('用户邮箱字段格式错误')),
+        phone: Joi.string().trim().lowercase().pattern(/^[1][2-9][0-9]{9}$/).error(new Error('用户手机字段格式错误')),
+        password: Joi.string().trim().min(9).max(16).error(new Error('用户密码字段格式错误')),
+        role: Joi.string().trim().lowercase().error(new Error('用户角色字段格式错误')),
+        gender: Joi.string().trim().lowercase().error(new Error('用户性别字段格式错误')),
         birth: Joi.object({
-            year: Joi.number().positive().integer().min(1970).max(2019).error(new Error('用户生日不合法')),
-            month: Joi.number().positive().integer().min(1).max(12).error(new Error('用户生日不合法')),
-            day: Joi.number().positive().integer().min(1).max(31).error(new Error('用户生日不合法')),
+            year: Joi.number().positive().integer().min(1970).max(2019).error(new Error('用户生日字段格式错误')),
+            month: Joi.number().positive().integer().min(1).max(12).error(new Error('用户生日字段格式错误')),
+            day: Joi.number().positive().integer().min(1).max(31).error(new Error('用户生日字段格式错误')),
         }),
-        area: Joi.array().length(3).items(Joi.string()).error(new Error('用户地址不合法')),
-        avatar: Joi.string().trim().lowercase().error(new Error('用户头像不合法')),
-        status: Joi.boolean().error(new Error('用户状态不合法')),
-        verifyCode: Joi.string().trim().lowercase().error(new Error('验证码不合法'))
+        area: Joi.array().length(3).items(Joi.string()).error(new Error('用户地址字段格式错误')),
+        avatar: Joi.string().trim().lowercase().error(new Error('用户头像字段格式错误')),
+        status: Joi.boolean().error(new Error('用户状态字段格式错误')),
+        verifyCode: Joi.string().trim().lowercase().error(new Error('验证码字段格式错误'))
     });
     return schema.validate(user);
 }
@@ -32,11 +32,11 @@ function vUser(user) {
  */
 function vDev(device) {
     const schema = Joi.object({
-        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID不合法')),
-        name: Joi.string().trim().lowercase().alphanum().min(3).max(8).error(new Error('设备名称不合法')),
-        macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac不合法')),
-        type: Joi.string().trim().lowercase().error(new Error('设备类型不合法')),
-        status: Joi.boolean().error(new Error('设备状态不合法'))
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID字段格式错误')),
+        name: Joi.string().trim().lowercase().alphanum().min(3).max(8).error(new Error('设备名称字段格式错误')),
+        macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误')),
+        type: Joi.string().trim().lowercase().error(new Error('设备类型字段格式错误')),
+        status: Joi.boolean().error(new Error('设备状态字段格式错误'))
     });
     return schema.validate(device);
 }
@@ -45,7 +45,7 @@ function vDev(device) {
  * 验证：Joi验证Data
  */
 function vData(macAddress) {
-    const schema = Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac不合法!'))
+    const schema = Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误!'))
     return schema.validate(macAddress);
 }
 
@@ -54,10 +54,10 @@ function vData(macAddress) {
  */
 function vMenu(menu) {
     const schema = Joi.object({
-        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID不合法')),
-        title: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('菜单标题不合法')),
-        icon: Joi.string().trim().lowercase().required().error(new Error('菜单图标不合法')),
-        index: Joi.string().trim().lowercase().required().error(new Error('菜单路由不合法')),
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID字段格式错误')),
+        title: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('菜单标题字段格式错误')),
+        icon: Joi.string().trim().lowercase().required().error(new Error('菜单图标字段格式错误')),
+        index: Joi.string().trim().lowercase().required().error(new Error('菜单路由字段格式错误')),
         subs: Joi.array()
     });
     return schema.validate(menu);
@@ -68,12 +68,12 @@ function vMenu(menu) {
  */
 function vRole(role) {
     const schema = Joi.object({
-        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID不合法')),
-        name: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('角色名称不合法')),
-        describe: Joi.string().trim().lowercase().required().min(2).max(8).error(new Error('角色描述不合法')),
-        number: Joi.number().error(new Error('角色数量不合法')),
-        menu: Joi.array().error(new Error('角色权限不合法')),
-        status: Joi.boolean().error(new Error('角色状态不合法'))
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID字段格式错误')),
+        name: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('角色名称字段格式错误')),
+        describe: Joi.string().trim().lowercase().required().min(2).max(8).error(new Error('角色描述字段格式错误')),
+        number: Joi.number().error(new Error('角色数量字段格式错误')),
+        menu: Joi.array().error(new Error('角色权限字段格式错误')),
+        status: Joi.boolean().error(new Error('角色状态字段格式错误'))
     });
     return schema.validate(role);
 }
@@ -83,12 +83,12 @@ function vRole(role) {
  */
 function vRoute(route) {
     const schema = Joi.object({
-        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID不合法')),
-        path: Joi.string().trim().lowercase().error(new Error('路由路径不合法')),
-        name: Joi.string().trim().lowercase().error(new Error('路由名称不合法')),
-        meta: Joi.object().error(new Error('路由数据不合法')),
-        component: Joi.string().trim().lowercase().error(new Error('路由组件不合法')),
-        package: Joi.string().trim().lowercase().error(new Error('路由包名不合法'))
+        _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID字段格式错误')),
+        path: Joi.string().trim().lowercase().error(new Error('路由路径字段格式错误')),
+        name: Joi.string().trim().lowercase().error(new Error('路由名称字段格式错误')),
+        meta: Joi.object().error(new Error('路由数据字段格式错误')),
+        component: Joi.string().trim().lowercase().error(new Error('路由组件字段格式错误')),
+        package: Joi.string().trim().lowercase().error(new Error('路由打包名字段格式错误'))
     });
     return schema.validate(route);
 }
@@ -97,7 +97,7 @@ function vRoute(route) {
  * 验证：Joi验证ID
  */
 function vId(id) {
-    const schema = Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('ID不合法'))
+    const schema = Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('ID字段格式错误'))
     return schema.validate(id);
 }
 

@@ -16,7 +16,7 @@ const {
     get500MW,
     corsMW,
     sessionMW
-} = require('../middleware/appMW')
+} = require('../middleware/app')
 
 // 中间件配置
 const {

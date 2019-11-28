@@ -35,66 +35,42 @@ exports.index = async (req, res, next) => {
     }
 
     let total
-    if (req.user.role === 'admin') {
-        total = await Device.find({
-            $or: [
+    await User
+        .findOne({ _id: req.user._id })
+        .populate({
+            path: 'devices',
+            match: [
                 { name: { $regex: reg } },
                 { macAddress: { $regex: reg } }
-            ]
-        }).countDocuments()
-    } else {
-        await User
-            .findOne({ _id: req.user._id })
-            .populate({
-                path: 'devices',
-                match: [
-                    { name: { $regex: reg } },
-                    { macAddress: { $regex: reg } }
-                ],
-            })
-            .exec((err, user) => {
-                if (err) throw new Error(err)
-                total = user.devices.length
-            })
-    }
+            ],
+        })
+        .exec((err, user) => {
+            if (err) throw new Error(err)
+            total = user.devices.length
+        })
 
     let data
-    if (req.user.role === 'admin') {
-        data = await Device.find({
-            $or: [
+    await User
+        .findOne({ _id: req.user._id })
+        .populate({
+            path: 'devices',
+            match: [
                 { name: { $regex: reg } },
                 { macAddress: { $regex: reg } }
-            ]
+            ],
+            options: {
+                limit: parseInt(req.body.pagerow),
+                skip: parseInt((req.body.pagenum - 1) * req.body.pagerow),
+                sort: sortDevices
+            }
         })
-            .limit(parseInt(req.body.pagerow))
-            .skip(parseInt((req.body.pagenum - 1) * req.body.pagerow))
-            .sort(sortDevices)
-        if (total && data) {
-            res.json({ code: "000000", data: { total, data } })
-        }
-    } else {
-        await User
-            .findOne({ _id: req.user._id })
-            .populate({
-                path: 'devices',
-                match: [
-                    { name: { $regex: reg } },
-                    { macAddress: { $regex: reg } }
-                ],
-                options: {
-                    limit: parseInt(req.body.pagerow),
-                    skip: parseInt((req.body.pagenum - 1) * req.body.pagerow),
-                    sort: sortDevices
-                }
-            })
-            .exec((err, user) => {
-                if (err) throw new Error(err)
-                data = user.devices
-                if (total && data) {
-                    res.json({ code: "000000", data: { total, data } })
-                }
-            })
-    }
+        .exec((err, user) => {
+            if (err) throw new Error(err)
+            data = user.devices
+            if (total && data) {
+                res.json({ code: "000000", data: { total, data } })
+            }
+        })
 }
 
 /**
