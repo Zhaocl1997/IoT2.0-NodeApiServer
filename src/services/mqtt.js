@@ -28,12 +28,13 @@ const client = mqtt.connect({
 
 // 建立连接
 client.on('connect', () => {
-  console.log(chalk.black.bgBlue(clientId + ' connected to Mosca on port ' + port))
+  console.log(chalk.black.bgBlue(clientId + ' connected to ' + host + ' on port ' + port))
 
-  // 订阅#以下所有级别的topic
-  client.subscribe('api-engine/#')
-  client.subscribe('pi/dht11/#')
-  client.subscribe('pi/camera/#')
+  // 订阅设备的反馈
+  client.subscribe('api/feedback')
+
+  client.subscribe('api/pi/dht11/data')
+  client.subscribe('api/pi/camera/data')
 })
 
 // 发送消息
@@ -41,20 +42,16 @@ client.on('message', (topic, message) => {
   // message is Buffer
 
   switch (topic) {
+    // 反馈
+    case 'api/feedback':
+      const mac = message.toString()
+      console.log('Device Response >> ', mac)
 
-    case 'api-engine/dht11/feedback': // 反馈
-      const dht11Mac = message.toString()
-      console.log('PI3_DHT11 Response >> ', dht11Mac)
-      client.publish('pi/dht11/feedback', 'API Got DHT11 Mac Address: ' + dht11Mac)
+      // 发布API的反馈
+      client.publish(`device/feedback/${mac}`, mac)
       break
 
-    case 'api-engine/camera/feedback': // 反馈
-      const cameraMac = message.toString()
-      console.log('PI3_Camera Response >> ', cameraMac)
-      client.publish('pi/camera/feedback', 'API Got Camera Mac Address: ' + cameraMac)
-      break
-
-    case 'pi/dht11/data':
+    case 'api/pi/dht11/data':
       const DHT11Data = JSON.parse(message.toString())
       Data.create(DHT11Data, (err, data) => {
         if (err) throw new Error(err)
@@ -62,7 +59,7 @@ client.on('message', (topic, message) => {
       })
       break
 
-    case 'pi/camera/data':
+    case 'api/pi/camera/data':
       const cameraData = JSON.parse(message.toString())
       // const image = Buffer.from(cameraData.data.image, 'utf8')
       // const fname = cameraData.data.id + '.jpg'
@@ -110,10 +107,10 @@ exports.onLED = (data) => {
 }
 
 exports.onCamera = (data) => {
-  if (data === true) {
-    client.publish('pi/camera/start')
+  if (data.status === true) {
+    client.publish(`device/pi/camera/${data.macAddress}/start`)
   } else
-    if (data === false) {
-      client.publish('pi/camera/stop')
+    if (data.status === false) {
+      client.publish(`device/pi/camera/${data.macAddress}/stop`)
     }
 }

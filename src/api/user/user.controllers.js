@@ -6,7 +6,7 @@ const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
 const sharp = require('sharp')
 const fs = require('fs')
 const zlib = require('zlib')
-const request = require('request')
+const rp = require('request-promise');
 
 
 /**
@@ -74,22 +74,27 @@ exports.avatar = async (req, res, next) => {
  * @description 获取天气 || public 
  */
 exports.weather = (req, res, next) => {
-    const url = encodeURI('http://wthrcdn.etouch.cn/weather_mini?city=' + req.body.city)
-
-    request({ url, json: true, encoding: null }, (e, { body }) => {
-        if (e) res.json({ code: "999999", message: '天气请求失败' })
-        zlib.unzip(body, (err, buffer) => {
-            if (err) res.json({ code: "999999", message: '天气解压缩失败' })
-
-            const response = JSON.parse(buffer.toString())
-            if (response.status === 1002) {
-                res.json({ code: "999999", message: '很抱歉，您所选择的区域暂时不支持天气预报~' })
-            } else {
-                const result = response.data.forecast[0]
-                res.json({ code: "000000", data: result })
-            }
+    const IP = req.body.IP
+    rp(`http://ip.taobao.com/service/getIpInfo.php?ip=${IP}`)
+        .then(response => {
+            const city = JSON.parse(response).data.city
+            rp({ uri: encodeURI(`http://wthrcdn.etouch.cn/weather_mini?city=${city}`), json: true, encoding: null })
+                .then(result => {
+                    zlib.unzip(result, (err, buffer) => {
+                        let data = JSON.parse(buffer.toString())
+                        if (data.status == 1002) {
+                            console.log(data.desc);
+                            res.json({ code: "999999", message: data.desc })
+                            return;
+                        }
+                        let result = data.data.forecast[0]
+                        res.json({ code: "000000", data: { today: result, city: data.data.city } });
+                    });
+                })
+        })
+        .catch((err) => {
+            throw new Error(err)
         });
-    });
 }
 
 /**

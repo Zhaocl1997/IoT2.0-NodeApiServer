@@ -7,7 +7,7 @@ const statusMiddleWare = require('../validate/status')
 // 验证验证码
 async function verifyCodeMiddleWare(req, res, next) {
     // 验证验证码
-    if (req.session.randomcode !== req.body.verifyCode) throw new Error('您的验证码输入错误~')
+    if (req.body.verifyCode && req.session.randomcode !== req.body.verifyCode) throw new Error('您的验证码输入错误~')
     next()
 }
 

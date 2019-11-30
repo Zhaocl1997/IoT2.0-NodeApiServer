@@ -59,7 +59,7 @@ deviceScheme.pre('save', async function (next) {
             break;
 
         case 'camera':
-            require('../../services/mqtt').onCamera(device.status)
+            require('../../services/mqtt').onCamera({ status: device.status, macAddress: device.macAddress })
             break;
 
         default:
