@@ -4,14 +4,13 @@
 
 'use strict'
 
-const fs = require('fs')
 const mqtt = require('mqtt')
 const chalk = require('chalk')
 const port = process.env.MQTT_PORT
 const host = process.env.MQTT_HOST
 const clientId = process.env.MQTT_CLIENTID
 const Data = require('../api/data/data.model')
-const { cameraPath } = require('../helper/config')
+const Device = require('../api/device/device.model')
 
 // MQTT client
 const client = mqtt.connect({
@@ -53,6 +52,7 @@ client.on('message', (topic, message) => {
 
     case 'api/pi/dht11/data':
       const DHT11Data = JSON.parse(message.toString())
+
       Data.create(DHT11Data, (err, data) => {
         if (err) throw new Error(err)
         console.log('DHT11_Data Saved :', data.data)
@@ -61,22 +61,7 @@ client.on('message', (topic, message) => {
 
     case 'api/pi/camera/data':
       const cameraData = JSON.parse(message.toString())
-      // const image = Buffer.from(cameraData.data.image, 'utf8')
-      // const fname = cameraData.data.id + '.jpg'
-
-      // fs.writeFile(
-      //   cameraPath + fname,
-      //   image,
-      //   "binary",
-      //   (err) => {
-      //     if (err) throw err;
-      //     console.log('[camera]', 'saved')
-      //   })
-
-      // delete cameraData.data.image
-      // delete cameraData.data.id
-      // cameraData.data.fname = fname
-
+      
       Data.create(cameraData, (err, data) => {
         if (err) throw new Error(err)
         console.log('Camera_Data Saved :', data.data)
@@ -89,20 +74,20 @@ client.on('message', (topic, message) => {
 })
 
 exports.onDHT11 = (data) => {
-  if (data === true) {
-    client.publish('pi/dht11/start')
+  if (data.status === true) {
+    client.publish(`device/pi/dht11/${data.macAddress}/start`)
   } else
-    if (data === false) {
-      client.publish('pi/dht11/stop')
+    if (data.status === false) {
+      client.publish(`device/pi/dht11/${data.macAddress}/stop`)
     }
 }
 
 exports.onLED = (data) => {
-  if (data.l === true) {
-    client.publish('pi/led/start')
+  if (data.status === true) {
+    client.publish(`device/pi/led/${data.macAddress}/start`)
   } else
-    if (data.l === false) {
-      client.publish('pi/led/stop')
+    if (data.status === false) {
+      client.publish(`device/pi/led/${data.macAddress}/stop`)
     }
 }
 

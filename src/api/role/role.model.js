@@ -5,15 +5,12 @@ const mongoose = require('mongoose')
 const roleSchema = new mongoose.Schema({
     name: {
         type: String,
-        require: true
+        require: true,
+        unique: true
     },
     describe: {
         type: String,
         require: true
-    },
-    number: {
-        type: Number,
-        default: 0
     },
     menu: {
         type: Array,
@@ -30,10 +27,11 @@ const roleSchema = new mongoose.Schema({
 /**
  * 虚拟属性,对应用户和菜单
  */
-roleSchema.virtual('users', {
+roleSchema.virtual('userCount', {
     ref: 'User',
-    localField: 'name',
-    foreignField: 'role'
+    localField: '_id',
+    foreignField: 'role',
+    count: true
 })
 
 /**

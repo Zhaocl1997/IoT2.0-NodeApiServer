@@ -9,5 +9,7 @@ const router = new express.Router()
 
 router.post('/index', [base, validateDataMiddleWare], controller.index)
 router.post('/onLED', base, controller.onLED)
+router.post('/create', base, controller.create)
+router.post('/delete', base, controller.delete)
 
 module.exports = router

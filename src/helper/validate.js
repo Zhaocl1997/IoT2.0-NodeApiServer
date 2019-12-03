@@ -22,7 +22,7 @@ function vUser(user) {
         area: Joi.array().length(3).items(Joi.string()).error(new Error('用户地址字段格式错误')),
         avatar: Joi.string().trim().lowercase().error(new Error('用户头像字段格式错误')),
         status: Joi.boolean().error(new Error('用户状态字段格式错误')),
-        verifyCode: Joi.string().trim().lowercase().error(new Error('验证码字段格式错误'))
+        verifyCode: Joi.string().trim().lowercase().error(new Error('验证码字段格式错误')),
     });
     return schema.validate(user);
 }
@@ -55,9 +55,9 @@ function vData(macAddress) {
 function vMenu(menu) {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID字段格式错误')),
-        title: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('菜单标题字段格式错误')),
-        icon: Joi.string().trim().lowercase().required().error(new Error('菜单图标字段格式错误')),
-        index: Joi.string().trim().lowercase().required().error(new Error('菜单路由字段格式错误')),
+        title: Joi.string().trim().lowercase().min(4).max(10).error(new Error('菜单标题字段格式错误')),
+        icon: Joi.string().trim().lowercase().error(new Error('菜单图标字段格式错误')),
+        index: Joi.string().trim().lowercase().error(new Error('菜单路由字段格式错误')),
         subs: Joi.array()
     });
     return schema.validate(menu);
@@ -69,9 +69,8 @@ function vMenu(menu) {
 function vRole(role) {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID字段格式错误')),
-        name: Joi.string().trim().lowercase().required().min(4).max(10).error(new Error('角色名称字段格式错误')),
-        describe: Joi.string().trim().lowercase().required().min(2).max(8).error(new Error('角色描述字段格式错误')),
-        number: Joi.number().error(new Error('角色数量字段格式错误')),
+        name: Joi.string().trim().lowercase().min(4).max(10).error(new Error('角色名称字段格式错误')),
+        describe: Joi.string().trim().lowercase().min(2).max(8).error(new Error('角色描述字段格式错误')),
         menu: Joi.array().error(new Error('角色权限字段格式错误')),
         status: Joi.boolean().error(new Error('角色状态字段格式错误'))
     });

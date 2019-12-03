@@ -24,7 +24,8 @@ const routeSchema = new mongoose.Schema({
         required: true
     },
 }, {
-    versionKey: false
+    versionKey: false,
+    timestamps: true
 })
 
 const Route = mongoose.model('Route', routeSchema)

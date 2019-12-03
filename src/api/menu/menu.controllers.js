@@ -2,7 +2,13 @@
 
 const Menu = require('./menu.model')
 const Role = require('../role/role.model')
-const fun = require('../../helper/public')
+const { aggregate_merge } = require('../../helper/public')
+const mongoose = require('mongoose')
+
+exports.options = async (req, res, next) => {
+    const menu = await Menu.find()
+    res.json({ code: "000000", data: menu })
+}
 
 /**
  * @method index
@@ -11,32 +17,47 @@ const fun = require('../../helper/public')
  * @description 根据用户角色查询相应菜单 || public
  */
 exports.index = async (req, res, next) => {
-    const menu = await Menu.find()
+    const result = await Role.findById(req.user.role, 'menu -_id')
+    const power = result.menu
 
-    // const result = await Role.findOne({ name: req.user.role }, 'menu -_id')
-    // const userPower = result.menu
-    // //console.log(userPower);
+    // 滤去其中的一级菜单ID
+    for (let k = power.length - 1; k > -1; k--) {
+        const e = power[k];
+        const menuOne = await Menu.findById(e)
+        if (menuOne) {
+            power.splice(k, 1)
+        }
+    }
 
-    // let arr = []
-    // for (let i = 0; i < menu.length; i++) {
-    //     let menuOne = menu[i];
+    let arr = []
+    for (let i = power.length - 1; i > -1; i--) {
+        const id = power[i];
 
-    //     for (let j = 0; j < menuOne.subs.length; j++) {
-    //         let menuTwo = menuOne.subs[j];
+        Menu.aggregate([
+            {
+                $match: {
+                    'subs._id': mongoose.Types.ObjectId(id)
+                }
+            },
+            {
+                $unwind: '$subs'
+            },
+            {
+                $match: {
+                    'subs._id': mongoose.Types.ObjectId(id)
+                }
+            }
+        ]).exec((err, menu) => {
+            if (err) throw new Error(err)
+            arr.push(menu[0])
 
-    //         for (let k = 0; k < userPower.length; k++) {
-    //             let id = userPower[k];
+            if (arr.length === power.length) {
+                const menu = aggregate_merge(arr)
 
-    //             if (menuTwo._id.toString() === id) {
-    //                 arr.push(menuTwo)
-    //             }
-    //         }
-    //     }
-    //     menuOne.subs = arr
-    // }
-    //console.log(arr);
-
-    res.json({ code: "000000", data: menu })
+                res.json({ code: "000000", data: menu })
+            }
+        })
+    }
 }
 
 /**
@@ -80,8 +101,7 @@ exports.update = async (req, res, next) => {
     let result
     const menu = await Menu.findById(req.body._id)
     if (menu) {
-        const menuOne = await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
-        result = await menuOne.save()
+        result = await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
     } else {
         await Menu.findOne({ "subs._id": req.body._id }, (err, menu) => {
             if (err) { throw new Error(err) }

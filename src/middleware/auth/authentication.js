@@ -14,7 +14,7 @@ async function authenticationMiddleWare(req, res, next) {
         req.user = user
         next()
     } catch (e) {
-        throw new Error('您在进行未认证访问哦~')
+        throw new Error('您在进行未认证访问哦')
     }
 }
 

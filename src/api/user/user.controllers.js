@@ -2,12 +2,34 @@
 
 const svgCaptcha = require('svg-captcha')
 const User = require('./user.model')
+const Role = require('../role/role.model')
 const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
 const sharp = require('sharp')
 const fs = require('fs')
 const zlib = require('zlib')
 const rp = require('request-promise');
+const ObjectId = require('mongodb').ObjectId
 
+/**
+ * @method register
+ * @param { Object } req.body
+ * @return { json }
+ * @description 注册 || public 
+ */
+exports.register = async (req, res, next) => {
+    // 根据email或phone查找用户 解决email/phone唯一问题
+    await User.isExist(req.body)
+
+    const role = await Role.findOne({ name: 'user' })
+
+    const user = new User({
+        ...req.body,
+        role: role._id
+    })
+    await user.save()
+
+    res.json({ code: "000000", data: user })
+}
 
 /**
  * @method login
@@ -78,9 +100,15 @@ exports.weather = (req, res, next) => {
     rp(`http://ip.taobao.com/service/getIpInfo.php?ip=${IP}`)
         .then(response => {
             const city = JSON.parse(response).data.city
+
+            if (city === 'XX') {
+                throw new Error('解析IP失败');
+            }
+
             rp({ uri: encodeURI(`http://wthrcdn.etouch.cn/weather_mini?city=${city}`), json: true, encoding: null })
                 .then(result => {
                     zlib.unzip(result, (err, buffer) => {
+                        if (err) throw new Error(err);
                         let data = JSON.parse(buffer.toString())
                         if (data.status == 1002) {
                             console.log(data.desc);
@@ -93,9 +121,21 @@ exports.weather = (req, res, next) => {
                 })
         })
         .catch((err) => {
-            throw new Error(err)
+            throw new Error(err);
         });
 }
+
+/**
+ * @method options
+ * @param { Object } req.body
+ * @return { json }
+ * @description 获取用户options || admin
+ */
+exports.options = async (req, res, next) => {
+    const user = await User.find({}, 'name')
+    res.json({ code: "000000", data: { user } });
+}
+
 
 /**
  * @method index
@@ -104,17 +144,16 @@ exports.weather = (req, res, next) => {
  * @description 获取所有用户信息 || admin
  */
 exports.index = async (req, res, next) => {
-    const sortOrder = req.body.sortOrder || -1
-    const sortField = req.body.sortField || 'status'
+    const sortOrder = req.body.sortOrder
+    const sortField = req.body.sortField
+    const pagenum = req.body.pagenum
+    const pagerow = req.body.pagerow
     const filters = req.body.filters
     const reg = new RegExp(filters, 'i')
 
     // 按表头排序
     let sortUsers
     switch (sortField) {
-        case "role":
-            sortUsers = { role: sortOrder }
-            break
         case "createdAt":
             sortUsers = { createdAt: sortOrder }
             break
@@ -124,6 +163,7 @@ exports.index = async (req, res, next) => {
         case "status":
             sortUsers = { status: sortOrder }
             break
+
         default:
             break
     }
@@ -138,7 +178,7 @@ exports.index = async (req, res, next) => {
         })
         .countDocuments()
 
-    const data = await User
+    await User
         .find({
             $or: [
                 { name: { $regex: reg } },
@@ -146,11 +186,24 @@ exports.index = async (req, res, next) => {
                 { phone: { $regex: reg } },
             ]
         })
-        .skip(parseInt((req.body.pagenum - 1) * req.body.pagerow))
-        .limit(parseInt(req.body.pagerow))
+        .skip(parseInt((pagenum - 1) * pagerow))
+        .limit(parseInt(pagerow))
         .sort(sortUsers)
-
-    res.json({ code: "000000", data: { total, data } })
+        .populate({
+            path: 'devCount',
+            options: {
+                lean: true
+            }
+        })
+        .populate({
+            path: 'role',
+            select: 'name'
+        })
+        .lean()
+        .exec((err, data) => {
+            if (err) throw new Error(err)
+            res.json({ code: "000000", data: { total, data } })
+        })
 }
 
 /**
@@ -163,7 +216,13 @@ exports.create = async (req, res, next) => {
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
-    const user = await new User(req.body)
+    const role = await Role.findOne({ name: req.body.role })
+    delete req.body.role
+
+    const user = new User({
+        ...req.body,
+        role: role._id
+    })
     await user.save()
     res.json({ code: "000000", data: user })
 }
@@ -175,6 +234,7 @@ exports.create = async (req, res, next) => {
  * @description 获取指定用户 || admin
  */
 exports.read = async (req, res, next) => {
+    await req.user.populate({ path: 'role', select: 'name' }).execPopulate()
     res.json({ code: '000000', data: req.user })
 }
 
@@ -185,11 +245,16 @@ exports.read = async (req, res, next) => {
  * @description 更新用户 || admin 
  */
 exports.update = async (req, res, next) => {
-    // 根据email或phone查找用户 解决email/phone唯一问题
+    // 根据email/phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
+    if (req.body.role) {
+        const role = await Role.findOne({ name: req.body.role })
+        req.body.role = ObjectId(role._id)
+    }
+
     const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
-    await user.save()
+    if (!user) throw new Error('用户不存在')
     res.json({ code: "000000", data: user })
 }
 

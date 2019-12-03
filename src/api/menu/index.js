@@ -12,6 +12,7 @@ const router = new express.Router()
 router.post('/index', base, controller.index)
 
 // admin
+router.post('/options', admin, controller.options)
 router.post('/create', [admin, validateMenuMiddleWare], controller.create)
 router.post('/read', [admin, validateIDMiddleWare], controller.read)
 router.post('/update', [admin, validateMenuMiddleWare], controller.update)

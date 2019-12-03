@@ -37,8 +37,9 @@ const userSchema = new mongoose.Schema({
         type: Array
     },
     role: {
-        type: String,
-        default: 'user'
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Role'
     },
     status: {
         type: Boolean,
@@ -55,10 +56,11 @@ const userSchema = new mongoose.Schema({
 /**
  * 虚拟属性,对应设备
  */
-userSchema.virtual('devices', {
+userSchema.virtual('devCount', {
     ref: 'Device',
     localField: '_id',
-    foreignField: 'createdBy'
+    foreignField: 'createdBy',
+    count: true
 })
 
 /**
@@ -90,7 +92,8 @@ userSchema.methods.generateAuthToken = async function () {
 }
 
 /**
- * 静态方法：通过凭据(email/phone)查找用户并验证密码,登录使用
+ * 静态方法：通过凭据(email/phone)查找用户并验证密码
+ * 登录使用
  */
 userSchema.statics.findByCredentialsAndCheckPass = async (body) => {
     const user = await User.findOne(
@@ -111,10 +114,12 @@ userSchema.statics.findByCredentialsAndCheckPass = async (body) => {
 }
 
 /**
- * 静态方法：通过凭据(email/phone)查找用户是否存在,解决email/phone唯一性问题,注册或新建和修改时使用
+ * 静态方法：通过凭据(email/phone)查找用户是否存在,解决email/phone唯一性问题
+ * 注册或新建和修改时使用
  */
 userSchema.statics.isExist = async (body) => {
     const user = await User.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ phone: body.phone }, { email: body.email }] }] })
+
     if (user) { throw new Error('用户已存在~') }
     return user
 }
@@ -143,7 +148,7 @@ userSchema.pre('remove', async function (next) {
             if (err) throw err;
         })
     }
-    
+
     next()
 })
 
