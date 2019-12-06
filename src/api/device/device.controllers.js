@@ -2,24 +2,22 @@
 
 const Device = require('./device.model')
 const Role = require('../role/role.model')
+const { vField } = require('../../helper/validate')
 
-function deviceIndex(filter, page, sort) {
-    return new Promise(async (resolve, reject) => {
-        await Device
+function device_index(filter, page, sort) {
+    return new Promise((resolve, reject) => {
+        Device
             .find(filter)
             .countDocuments()
-            .exec(async (err, total) => {
+            .exec((err, total) => {
                 if (err) reject(err)
-                await Device
+                Device
                     .find(filter)
-                    .skip(parseInt((page.pagenum - 1) * page.pagerow))
-                    .limit(parseInt(page.pagerow))
+                    .skip(page.skip)
+                    .limit(page.limit)
                     .sort(sort)
                     .populate({
-                        path: 'dataCount',
-                        options: {
-                            lean: true
-                        }
+                        path: 'dataCount'
                     })
                     .populate({
                         path: 'createdBy',
@@ -28,20 +26,36 @@ function deviceIndex(filter, page, sort) {
                     .lean()
                     .exec((err, data) => {
                         if (err) reject(err)
-                        resolve({ code: "000000", data: { total, data } })
-                        // res.json({ code: "000000", data: { total, data } })
+                        resolve({ total, data })
                     })
             })
     })
 }
 
 /**
+ * @method options
+ * @param { Object }
+ * @returns { data }
+ * @description public 
+ */
+exports.options = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id", "type"])
+
+    const data = await Device.find({ createdBy: req.body._id, type: req.body.type }, 'name')
+    res.json({ code: "000000", data: { data } })
+}
+
+/**
  * @method index
- * @param { Object } req.body
- * @return { json }
- * @description 获取用户的所有设备信息 || public 
+ * @param { Object } 
+ * @returns { data }
+ * @description public 
  */
 exports.index = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["sortOrder", "sortField", "pagenum", "pagerow", "filters"])
+
     const sortOrder = req.body.sortOrder
     const sortField = req.body.sortField
     const pagenum = req.body.pagenum
@@ -74,8 +88,8 @@ exports.index = async (req, res, next) => {
 
     // 分页
     const page = {
-        pagenum,
-        pagerow
+        skip: parseInt((pagenum - 1) * pagerow),
+        limit: parseInt(pagerow)
     }
 
     // 查询
@@ -98,17 +112,17 @@ exports.index = async (req, res, next) => {
     const role = await Role.findById(req.user.role)
 
     if (role.name === 'admin') {
-        deviceIndex(filter.adminFilter, page, sort)
+        device_index(filter.adminFilter, page, sort)
             .then(result => {
-                res.json(result)
+                res.json({ code: "000000", data: result })
             })
             .catch(err => {
                 console.log(err);
             })
     } else {
-        deviceIndex(filter.userFilter, page, sort)
+        device_index(filter.userFilter, page, sort)
             .then(result => {
-                res.json(result)
+                res.json({ code: "000000", data: result })
             })
             .catch(err => {
                 console.log(err);
@@ -118,11 +132,14 @@ exports.index = async (req, res, next) => {
 
 /**
  * @method create
- * @param { Object } req.body
- * @return { json }
- * @description 为指定用户创建新设备 || public 
+ * @param { Object }
+ * @returns { Boolean }
+ * @description public 
  */
 exports.create = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["name", "macAddress", "type"])
+
     // 根据mac/name查找设备 解决mac/name唯一问题
     await Device.isExist(req.body)
 
@@ -131,43 +148,58 @@ exports.create = async (req, res, next) => {
         createdBy: req.user._id
     })
     await device.save()
-    res.json({ code: "000000", data: device })
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
  * @method read
- * @param { Object } req.body
- * @return { json }
- * @description 读取指定用户的指定设备信息 || public
+ * @param { Object }
+ * @returns { data }
+ * @description public
  */
 exports.read = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
     const device = await Device.findOne({ $and: [{ _id: req.body._id, createdBy: req.user._id }] })
     if (!device) { throw new Error('设备不存在') }
-    res.json({ code: '000000', data: device })
+    res.json({ code: '000000', data: { data: device } })
 }
 
 /**
  * @method update
- * @param { Object } req.body
- * @return { json }
- * @description 更新指定用户的指定设备信息 || public 
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description public 
  */
 exports.update = async (req, res, next) => {
+    // 验证字段
+    if (req.body.macAddress) {
+        vField(req.body, ["_id", "name", "macAddress", "type"])
+    } else if (req.body.status) {
+        vField(req.body, ["_id", "status"])
+    }
+
     // 根据mac/name查找设备 解决mac/name唯一问题
     await Device.isExist(req.body)
 
-    const device = await Device.findByIdAndUpdate(req.body._id, req.body, { new: true })
-    res.json({ code: "000000", data: device })
+    const device = await Device.findOneAndUpdate({ $and: [{ _id: req.body._id, createdBy: req.user._id }] }, req.body, { new: true })
+    if (!device) throw new Error('设备不存在')
+    await device.save()
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
  * @method delete
- * @param { Object } req.body
- * @return { json }
- * @description 删除指定用户的指定设备信息 || public
+ * @param { Object }
+ * @returns { Boolean }
+ * @description public
  */
 exports.delete = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
     const device = await Device.findOneAndDelete({ $and: [{ _id: req.body._id, createdBy: req.user._id }] })
     if (!device) { throw new Error('设备不存在') }
-    res.json({ code: "000000", data: device })
+    res.json({ code: "000000", data: { data: device } })
 }

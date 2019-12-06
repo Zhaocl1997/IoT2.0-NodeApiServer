@@ -1,8 +1,6 @@
 'use strict'
 
 const mongoose = require('mongoose')
-const User = require('../user/user.model')
-const Device = require('../device/device.model')
 
 const dataSchema = new mongoose.Schema({
     macAddress: {
@@ -13,7 +11,7 @@ const dataSchema = new mongoose.Schema({
         type: mongoose.Mixed,
         required: true
     },
-    isDrop: {
+    flag: {
         type: Boolean,
         default: false
     },
@@ -28,15 +26,12 @@ const dataSchema = new mongoose.Schema({
 })
 
 /**
- *  pre中间件：数据保存前,绑定设备ID和用户ID
+ *  pre中间件：
  */
 dataSchema.pre('save', async function (next) {
     const data = this
-    const device = await Device.findOne({ macAddress: data.macAddress })
-    data.createdBy = device._id
     next()
 })
-
 
 /**
  *  post中间件：数据保存后,socket发布一个事件

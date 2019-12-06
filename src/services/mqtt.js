@@ -37,7 +37,7 @@ client.on('connect', () => {
 })
 
 // 发送消息
-client.on('message', (topic, message) => {
+client.on('message', async (topic, message) => {
   // message is Buffer
 
   switch (topic) {
@@ -48,28 +48,38 @@ client.on('message', (topic, message) => {
 
       // 发布API的反馈
       client.publish(`device/feedback/${mac}`, mac)
-      break
+      break;
 
     case 'api/pi/dht11/data':
       const DHT11Data = JSON.parse(message.toString())
 
-      Data.create(DHT11Data, (err, data) => {
-        if (err) throw new Error(err)
-        console.log('DHT11_Data Saved :', data.data)
+      const dht11Device = await Device.find({ macAddress: DHT11Data.macAddress })
+
+      const dht11 = new Data({
+        ...DHT11Data,
+        createdBy: dht11Device[0]._id
       })
-      break
+      await dht11.save()
+
+      console.log('DHT11_Data Saved :', dht11.data)
+      break;
 
     case 'api/pi/camera/data':
       const cameraData = JSON.parse(message.toString())
-      
-      Data.create(cameraData, (err, data) => {
-        if (err) throw new Error(err)
-        console.log('Camera_Data Saved :', data.data)
+
+      const cameraDevice = await Device.find({ macAddress: cameraData.macAddress })
+
+      const camera = new Data({
+        ...cameraData,
+        createdBy: cameraDevice[0]._id
       })
-      break
+      await camera.save()
+
+      console.log('Camera_Data Saved :', camera.data)
+      break;
 
     default:
-      break
+      break;
   }
 })
 

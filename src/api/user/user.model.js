@@ -10,25 +10,41 @@ const { avatarPath } = require('../../helper/config')
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true
-    },
-    password: {
-        type: String,
-        required: true
+        required: true,
+        trim: true,
+        lowercase: true,
+        min: 3,
+        max: 16
     },
     email: {
         type: String,
-        unique: true,
-        required: true
+        unique: true, // 唯一
+        required: true,
+        trim: true,
+        lowercase: true
     },
     phone: {
         type: String,
-        unique: true,
-        required: true
+        unique: true, // 唯一
+        required: true,
+        trim: true,
+        lowercase: true
+    },
+    password: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    role: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'Role'
     },
     gender: {
         type: String,
-        default: '保密'
+        default: '保密',
+        trim: true,
+        lowercase: true
     },
     birth: {
         type: Object
@@ -36,17 +52,14 @@ const userSchema = new mongoose.Schema({
     area: {
         type: Array
     },
-    role: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'Role'
+    avatar: {
+        type: String,
+        trim: true,
+        lowercase: true
     },
     status: {
         type: Boolean,
         default: true
-    },
-    avatar: {
-        type: String
     }
 }, {
     timestamps: true,

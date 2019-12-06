@@ -15,9 +15,9 @@ async function userStatusMiddleWare(req, res, next) {
     next()
 }
 
-const statusMiddleWare = [
+const statusMW = [
     roleStatusMiddelWare,
     userStatusMiddleWare
 ]
 
-module.exports = statusMiddleWare
+module.exports = statusMW

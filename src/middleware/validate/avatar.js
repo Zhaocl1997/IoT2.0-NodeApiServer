@@ -32,6 +32,6 @@ const avatar = multer({
     fileFilter: fileFilter
 }).single('avatar')
 
-const avatarMiddleWare = [base, avatar]
+const avatarMW = [base, avatar]
 
-module.exports = avatarMiddleWare
+module.exports = avatarMW

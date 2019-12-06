@@ -1,13 +1,5 @@
 'use strict'
 
-// 获取客户IP
-function getClientIp(req) {
-    return req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress || '';
-}
-
 // mongoDB时间转换为日期
 function timeFormat(time, format) {
     const t = new Date(time) // 2019-11-09T06:27:57.040Z
@@ -79,4 +71,4 @@ function aggregate_merge(arr) {
     return dest.sort()
 }
 
-module.exports = { getClientIp, timeFormat, getNow, aggregate_merge }
+module.exports = { timeFormat, getNow, aggregate_merge }

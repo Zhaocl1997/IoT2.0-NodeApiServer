@@ -1,7 +1,7 @@
 'use strict'
 
-const { validateUserMiddleWare } = require('../validate/validate')
+const { vUserMW } = require('../validate/validate')
 
-const registerMiddleWare = [validateUserMiddleWare]
+const registerMW = [vUserMW]
 
-module.exports = registerMiddleWare
+module.exports = registerMW

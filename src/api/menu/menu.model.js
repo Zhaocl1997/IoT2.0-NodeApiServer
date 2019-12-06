@@ -16,7 +16,8 @@ const submenuSchema = new mongoose.Schema({
         required: true
     },
 }, {
-    versionKey: false
+    versionKey: false,
+    timestamps: true
 });
 
 const menuSchema = new mongoose.Schema({
@@ -34,7 +35,8 @@ const menuSchema = new mongoose.Schema({
     },
     subs: [submenuSchema],
 }, {
-    versionKey: false
+    versionKey: false,
+    timestamps: true
 });
 
 const Menu = mongoose.model('Menu', menuSchema)

@@ -3,13 +3,17 @@
 const express = require('express')
 const controller = require('./data.controllers')
 const base = require('../../middleware/base')
-const { validateDataMiddleWare } = require('../../middleware/validate/validate')
+const admin = require('../../middleware/admin')
+const { vDataMW } = require('../../middleware/validate/validate')
 
 const router = new express.Router()
 
-router.post('/index', [base, validateDataMiddleWare], controller.index)
-router.post('/onLED', base, controller.onLED)
-router.post('/create', base, controller.create)
-router.post('/delete', base, controller.delete)
+// user
+router.post('/index', base, controller.index)
+router.post('/onLED', [base, vDataMW], controller.onLED)
+
+// admin
+router.post('/create', admin, controller.create)
+router.post('/delete', admin, controller.delete)
 
 module.exports = router

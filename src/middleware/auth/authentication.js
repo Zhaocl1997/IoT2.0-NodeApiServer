@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../../api/user/user.model')
 
 // 验证用户是否认证
-async function authenticationMiddleWare(req, res, next) {
+async function authenticationMW(req, res, next) {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const decoded = jwt.verify(token, process.env.JWT_SERECT)
@@ -18,4 +18,4 @@ async function authenticationMiddleWare(req, res, next) {
     }
 }
 
-module.exports = authenticationMiddleWare
+module.exports = authenticationMW

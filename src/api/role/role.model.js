@@ -5,15 +5,24 @@ const mongoose = require('mongoose')
 const roleSchema = new mongoose.Schema({
     name: {
         type: String,
-        require: true,
-        unique: true
+        unique: true, // 唯一
+        required: true,
+        trim: true,
+        lowercase: true,
+        min: 3,
+        max: 16
     },
     describe: {
         type: String,
-        require: true
+        required: true,
+        trim: true,
+        lowercase: true,
+        min: 3,
+        max: 16
     },
     menu: {
         type: Array,
+        required: true
     },
     status: {
         type: Boolean,
@@ -33,6 +42,17 @@ roleSchema.virtual('userCount', {
     foreignField: 'role',
     count: true
 })
+
+/**
+ * 静态方法：通过凭据(name)查找角色是否存在,解决name唯一性问题
+ * 新建和修改时使用
+ */
+roleSchema.statics.isExist = async (body) => {
+    const role = await Role.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ name: body.name }] }] })
+
+    if (role) { throw new Error('角色已存在~') }
+    return role
+}
 
 /**
  * 预保存钩：删除角色时,同时删除该角色的所有用户

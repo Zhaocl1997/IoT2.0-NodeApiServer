@@ -7,12 +7,15 @@ const deviceScheme = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true
+        unique: true, // 唯一
+        trim: true,
+        min: 3,
+        max: 16
     },
     macAddress: {
         type: String,
         required: true,
-        unique: true
+        unique: true  // 唯一
     },
     type: {
         type: String,
@@ -82,7 +85,7 @@ deviceScheme.pre('remove', async function (next) {
     for (let i = 0; i < data.length; i++) {
         const oneData = data[i];
         oneData.isDrop = true
-        await oneDate.save()
+        await oneData.save()
     }
     next()
 })

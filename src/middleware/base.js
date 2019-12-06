@@ -1,9 +1,9 @@
 'use strict'
 
-const statusMiddleWare = require('./validate/status')
-const authenticationMiddleWare = require('./auth/authentication')
+const statusMW = require('./validate/status')
+const authenticationMW = require('./auth/authentication')
 
 // 基础中间件
-const base = [authenticationMiddleWare, statusMiddleWare]
+const base = [authenticationMW, statusMW]
 
 module.exports = base

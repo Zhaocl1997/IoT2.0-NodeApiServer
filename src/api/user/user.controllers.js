@@ -1,25 +1,32 @@
 'use strict'
 
-const svgCaptcha = require('svg-captcha')
-const User = require('./user.model')
-const Role = require('../role/role.model')
-const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
-const sharp = require('sharp')
 const fs = require('fs')
 const zlib = require('zlib')
-const rp = require('request-promise');
-const ObjectId = require('mongodb').ObjectId
+const User = require('./user.model')
+const Role = require('../role/role.model')
+
+const { vField } = require('../../helper/validate')
+const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
+
+const sharp = require('sharp')
+const rp = require('request-promise')
+const svgCaptcha = require('svg-captcha')
+
 
 /**
  * @method register
- * @param { Object } req.body
- * @return { json }
- * @description 注册 || public 
+ * @param { Object } 
+ * @returns { data }
+ * @description public 
  */
 exports.register = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["name", "password", "email", "phone"])
+
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
+    // 默认用户角色为user
     const role = await Role.findOne({ name: 'user' })
 
     const user = new User({
@@ -27,36 +34,45 @@ exports.register = async (req, res, next) => {
         role: role._id
     })
     await user.save()
-
-    res.json({ code: "000000", data: user })
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
  * @method login
- * @param { Object } req.body
- * @return { json }
- * @description 登录 || public 
+ * @param { Object } 
+ * @returns { data }
+ * @description public 
  */
 exports.login = async (req, res, next) => {
+    // 验证字段
+    if (req.body.phone) {
+        vField(req.body, ["password", "phone", "verifyCode"])
+    } else if (req.body.email) {
+        vField(req.body, ["password", "email", "verifyCode"])
+    }
+
+    // 生成token
     const token = await req.user.generateAuthToken()
+
+    await req.user.populate({ path: 'role', select: 'name' }).execPopulate()
     res.json({ code: "000000", data: { token, user: req.user } })
 }
 
 /**
  * @method logout
  * @param { null } 
- * @return { null }
- * @description 登出 || public
+ * @returns { Boolean }
+ * @description public
  */
 exports.logout = async (req, res, next) => {
-    res.json({ code: '000000' })
+    res.json({ code: '000000', data: { data: true } })
 }
 
 /**
  * @method captcha
- * @param { null }
- * @return { json }
- * @description 获取验证码 || public 
+ * @param { session }
+ * @returns { data }
+ * @description public 
  */
 exports.captcha = async (req, res, next) => {
     // 验证码，有两个属性，text是字符，data是svg代码
@@ -70,8 +86,8 @@ exports.captcha = async (req, res, next) => {
 /**
  * @method avatar
  * @param { form-data }
- * @return { json }
- * @description 上传头像 || public 
+ * @returns { Boolean }
+ * @description user 
  */
 exports.avatar = async (req, res, next) => {
     const avatarName = `${req.user._id}.png`
@@ -85,65 +101,68 @@ exports.avatar = async (req, res, next) => {
             if (err) throw err;
             req.user.avatar = process.env.SERVER_URL + '/avatar/' + avatarName
             req.user.save()
-            res.json({ code: "000000" })
+            res.json({ code: "000000", data: { data: true } })
         })
 }
 
 /**
  * @method weather
- * @param { city }
- * @return { json }
- * @description 获取天气 || public 
+ * @param { IP }
+ * @returns { data }
+ * @description user 
  */
 exports.weather = (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["IP"])
+
     const IP = req.body.IP
-    rp(`http://ip.taobao.com/service/getIpInfo.php?ip=${IP}`)
+    const ipURL = `http://api.map.baidu.com/location/ip?ak=F454f8a5efe5e577997931cc01de3974&ip=${IP}`
+    rp({ uri: ipURL, json: true })
         .then(response => {
-            const city = JSON.parse(response).data.city
-
-            if (city === 'XX') {
-                throw new Error('解析IP失败');
-            }
-
-            rp({ uri: encodeURI(`http://wthrcdn.etouch.cn/weather_mini?city=${city}`), json: true, encoding: null })
+            const city = response.content.address_detail.city
+            const weatherURL = encodeURI(`http://wthrcdn.etouch.cn/weather_mini?city=${city}`)
+            rp({ uri: weatherURL, json: true, encoding: null })
                 .then(result => {
                     zlib.unzip(result, (err, buffer) => {
-                        if (err) throw new Error(err);
+                        if (err) console.log(err)
                         let data = JSON.parse(buffer.toString())
+
                         if (data.status == 1002) {
                             console.log(data.desc);
                             res.json({ code: "999999", message: data.desc })
                             return;
                         }
-                        let result = data.data.forecast[0]
-                        res.json({ code: "000000", data: { today: result, city: data.data.city } });
+                        let result = data.data
+                        res.json({ code: "000000", data: { data: result } });
                     });
                 })
         })
         .catch((err) => {
-            throw new Error(err);
+            console.log(err.statusCode)
         });
 }
 
 /**
  * @method options
- * @param { Object } req.body
- * @return { json }
- * @description 获取用户options || admin
+ * @param { Object }
+ * @returns { data }
+ * @description admin
  */
 exports.options = async (req, res, next) => {
-    const user = await User.find({}, 'name')
-    res.json({ code: "000000", data: { user } });
+    const data = await User.find({}, 'name')
+    res.json({ code: "000000", data: { data } });
 }
-
 
 /**
  * @method index
- * @param { Object } req.body
- * @return { json }
- * @description 获取所有用户信息 || admin
+ * @param { Object } 
+ * @returns { data }
+ * @description admin
  */
-exports.index = async (req, res, next) => {
+exports.index = (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["sortOrder", "sortField", "pagenum", "pagerow", "filters"])
+
     const sortOrder = req.body.sortOrder
     const sortField = req.body.sortField
     const pagenum = req.body.pagenum
@@ -151,122 +170,137 @@ exports.index = async (req, res, next) => {
     const filters = req.body.filters
     const reg = new RegExp(filters, 'i')
 
-    // 按表头排序
-    let sortUsers
+    // 排序
+    let sort
     switch (sortField) {
         case "createdAt":
-            sortUsers = { createdAt: sortOrder }
+            sort = { createdAt: sortOrder }
             break
         case "updatedAt":
-            sortUsers = { updatedAt: sortOrder }
+            sort = { updatedAt: sortOrder }
             break
         case "status":
-            sortUsers = { status: sortOrder }
+            sort = { status: sortOrder }
             break
 
         default:
             break
     }
 
-    const total = await User
-        .find({
-            $or: [
-                { name: { $regex: reg } },
-                { email: { $regex: reg } },
-                { phone: { $regex: reg } },
-            ]
-        })
-        .countDocuments()
+    // 分页
+    const page = {
+        skip: parseInt((pagenum - 1) * pagerow),
+        limit: parseInt(pagerow)
+    }
 
-    await User
-        .find({
-            $or: [
-                { name: { $regex: reg } },
-                { email: { $regex: reg } },
-                { phone: { $regex: reg } },
-            ]
-        })
-        .skip(parseInt((pagenum - 1) * pagerow))
-        .limit(parseInt(pagerow))
-        .sort(sortUsers)
-        .populate({
-            path: 'devCount',
-            options: {
-                lean: true
-            }
-        })
-        .populate({
-            path: 'role',
-            select: 'name'
-        })
-        .lean()
-        .exec((err, data) => {
+    // 查询
+    const filter = {
+        $or: [
+            { name: { $regex: reg } },
+            { email: { $regex: reg } },
+            { phone: { $regex: reg } },
+        ]
+    }
+
+    User
+        .find(filter)
+        .countDocuments()
+        .exec((err, total) => {
             if (err) throw new Error(err)
-            res.json({ code: "000000", data: { total, data } })
+            User
+                .find(filter)
+                .skip(page.skip)
+                .limit(page.limit)
+                .sort(sort)
+                .populate({
+                    path: 'devCount'
+                })
+                .populate({
+                    path: 'role',
+                    select: 'name'
+                })
+                .lean()
+                .exec((err, data) => {
+                    if (err) throw new Error(err)
+                    res.json({ code: "000000", data: { total, data } })
+                })
         })
 }
 
 /**
  * @method create
- * @param { Object } req.body
- * @return { json }
- * @description 创建新用户 || admin 
+ * @param { Object }
+ * @returns { Boolean }
+ * @description admin 
  */
 exports.create = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["name", "password", "email", "phone", "role"])
+
     // 根据email或phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
+    // 通过角色名称找到角色
     const role = await Role.findOne({ name: req.body.role })
-    delete req.body.role
+    req.body.role = role._id
 
-    const user = new User({
-        ...req.body,
-        role: role._id
-    })
+    const user = new User(req.body)
     await user.save()
-    res.json({ code: "000000", data: user })
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
  * @method read
- * @param { Object } req.body
- * @return { json }
- * @description 获取指定用户 || admin
+ * @param { Object } 
+ * @returns { data }
+ * @description user
  */
 exports.read = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
     await req.user.populate({ path: 'role', select: 'name' }).execPopulate()
-    res.json({ code: '000000', data: req.user })
+    res.json({ code: '000000', data: { data: req.user } })
 }
 
 /**
  * @method update
- * @param { Object } req.body
- * @return { json }
- * @description 更新用户 || admin 
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description user 
  */
 exports.update = async (req, res, next) => {
+    // 验证字段
+    if (req.body.gender) {
+        vField(req.body, ["_id", "name", "email", "phone", "role", "birth", "gender", "area", "status", "avatar"])
+    } else {
+        vField(req.body, ["_id", "name", "email", "phone", "role"])
+    }
+
     // 根据email/phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
-    if (req.body.role) {
-        const role = await Role.findOne({ name: req.body.role })
-        req.body.role = ObjectId(role._id)
-    }
+    // 通过角色名称找到角色
+    const role = await Role.findOne({ name: req.body.role })
+    req.body.role = role._id
 
     const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
     if (!user) throw new Error('用户不存在')
-    res.json({ code: "000000", data: user })
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
  * @method delete
- * @param { Object } req.body
- * @return { json }
- * @description 删除指定用户 || admin
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description admin
  */
 exports.delete = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
     const user = await User.findByIdAndDelete(req.body._id)
     if (!user) throw new Error('用户不存在')
     await user.remove()
-    res.json({ code: '000000', data: user })
+    res.json({ code: '000000', data: { data: true } })
 }

@@ -1,139 +1,171 @@
 'use strict'
 
-const Menu = require('./menu.model')
-const Role = require('../role/role.model')
-const { aggregate_merge } = require('../../helper/public')
 const mongoose = require('mongoose')
 
+const Menu = require('./menu.model')
+const Role = require('../role/role.model')
+const { vField } = require('../../helper/validate')
+
+/**
+ * @method options
+ * @param { Object }
+ * @return { data } 
+ * @description admin
+ */
 exports.options = async (req, res, next) => {
     const menu = await Menu.find()
-    res.json({ code: "000000", data: menu })
+    res.json({ code: "000000", data: { data: menu } })
 }
 
 /**
  * @method index
- * @param { Object } req.body
- * @return { json } 
- * @description 根据用户角色查询相应菜单 || public
+ * @param { Object } 
+ * @returns { data } 
+ * @description public
  */
 exports.index = async (req, res, next) => {
+    // 根据角色获取菜单ID
     const result = await Role.findById(req.user.role, 'menu -_id')
     const power = result.menu
 
-    // 滤去其中的一级菜单ID
-    for (let k = power.length - 1; k > -1; k--) {
-        const e = power[k];
-        const menuOne = await Menu.findById(e)
-        if (menuOne) {
-            power.splice(k, 1)
-        }
+    // 将ID从字符串变成ObJectID
+    let id = []
+    for (let i = 0; i < power.length; i++) {
+        const element = power[i];
+        id.push(mongoose.Types.ObjectId(element))
     }
 
-    let arr = []
-    for (let i = power.length - 1; i > -1; i--) {
-        const id = power[i];
-
-        Menu.aggregate([
-            {
-                $match: {
-                    'subs._id': mongoose.Types.ObjectId(id)
-                }
-            },
-            {
-                $unwind: '$subs'
-            },
-            {
-                $match: {
-                    'subs._id': mongoose.Types.ObjectId(id)
-                }
+    // 聚合查询
+    Menu.aggregate([
+        { $unwind: '$subs' },
+        { $match: { 'subs._id': { $in: id } } },
+        {
+            $group: {
+                '_id': '$_id',
+                'title': { '$first': '$title' },
+                'icon': { '$first': '$icon' },
+                'index': { '$first': '$index' },
+                'subs': { '$push': '$subs' }
             }
-        ]).exec((err, menu) => {
-            if (err) throw new Error(err)
-            arr.push(menu[0])
-
-            if (arr.length === power.length) {
-                const menu = aggregate_merge(arr)
-
-                res.json({ code: "000000", data: menu })
-            }
-        })
-    }
+        },
+        { $sort: { '_id': 1, } },
+    ]).exec((err, menu) => {
+        if (err) throw new Error(err)
+        res.json({ code: "000000", data: menu })
+    })
 }
 
 /**
  * @method create
- * @param { Object } req.body
- * @return { json }
- * @description 新建菜单 || admin 
+ * @param { Object }
+ * @returns { Boolean }
+ * @description admin 
  */
 exports.create = async (req, res, next) => {
-    let menu
     if (!req.body._id) {
-        menu = await new Menu(req.body).save()
+        // 验证字段
+        vField(req.body, ["title", "icon", "index"])
+
+        const menu = new Menu(req.body)
+        await menu.save()
+        res.json({ code: "000000", data: { data: true } })
     } else {
-        const subMenu = await Menu.findById(req.body._id)
+        // 验证字段
+        vField(req.body, ["title", "icon", "index", "_id"])
+
+        const hasSubMenu = await Menu.findById(req.body._id)
         delete req.body._id
-        subMenu.subs.push(req.body)
-        menu = await subMenu.save()
+        hasSubMenu.subs.push(req.body)
+        await hasSubMenu.save()
+        res.json({ code: "000000", data: { data: true } })
     }
-    res.json({ code: "000000", data: menu })
 }
 
 /**
  * @method read
- * @param { Object } req.body
- * @return { json }
- * @description 读取菜单信息 || admin
+ * @param { Object }
+ * @returns { data }
+ * @description admin
  */
 exports.read = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
     const menu = await Menu.findById(req.body._id)
     if (!menu) { throw new Error('菜单不存在') }
-    res.json({ code: '000000', data: menu })
+    res.json({ code: "000000", data: { data: menu } })
 }
 
 /**
  * @method update
- * @param { Object } req.body
- * @return { json }
- * @description 更新指定菜单 || admin 
+ * @param { Object }
+ * @returns { Boolean }
+ * @description admin 
  */
 exports.update = async (req, res, next) => {
-    let result
     const menu = await Menu.findById(req.body._id)
     if (menu) {
-        result = await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
+        // 验证字段
+        vField(req.body, ["title", "icon", "index", "_id", "subs"])
+
+        await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
+        res.json({ code: "000000", data: { data: { data: true } } })
     } else {
-        await Menu.findOne({ "subs._id": req.body._id }, (err, menu) => {
-            if (err) { throw new Error(err) }
+        // 验证字段
+        vField(req.body, ["title", "icon", "index", "_id"])
+
+        await Menu.findOne({ "subs._id": req.body._id }, async (err, menu) => {
+            if (err) throw new Error(err)
 
             const updates = Object.keys(req.body).filter(key => key !== '_id')
             const menuTwo = menu.subs.id(req.body._id)
             updates.forEach((update) => menuTwo[update] = req.body[update])
-            result = menu.save()
+            await menu.save()
+            res.json({ code: "000000", data: { data: true } })
         })
     }
-
-    res.json({ code: "000000", data: result })
 }
 
 /**
  * @method delete
- * @param { Object } req.body
- * @return { json }
- * @description 删除指定菜单信息 || admin
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description admin
  */
 exports.delete = async (req, res, next) => {
-    let result
+    // 验证字段
+    vField(req.body, ["_id"])
+
+    // 删除菜单时同时删除角色表里menu数组里的相应ID
+    // 仅限于删除二级菜单的ID
+    await Role
+        .find()
+        .exec(async (err, role) => {
+            if (err) throw new Error(err)
+            for (let i = 0; i < role.length; i++) {
+                const element = role[i];
+
+                for (let j = 0; j < element.menu.length; j++) {
+                    const menuID = element.menu[j];
+
+                    if (req.body._id.toString() === menuID.toString()) {
+                        element.menu.splice(j, 1)
+                        await element.save()
+                    }
+                }
+            }
+        })
+
     const menu = await Menu.findById(req.body._id)
     if (menu) {
-        result = await menu.remove()
+        await menu.remove()
+        res.json({ code: "000000", data: { data: true } })
     } else {
         await Menu.findOne({ "subs._id": req.body._id }, async (err, menu) => {
-            if (err) { throw new Error(err) }
+            if (err) throw new Error(err)
             menu.subs.id(req.body._id).remove() // 不触发remove的钩子
-            result = await menu.save()
+            await menu.save()
+            res.json({ code: "000000", data: { data: true } })
         })
     }
-
-    res.json({ code: "000000", data: result })
 }

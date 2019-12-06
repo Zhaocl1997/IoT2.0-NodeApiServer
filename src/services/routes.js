@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Routes 配置
  */
 
@@ -12,4 +12,6 @@ module.exports = (app) => {
     app.use('/api/v1/menu', require('../api/menu'))
     app.use('/api/v1/role', require('../api/role'))
     app.use('/api/v1/route', require('../api/route'))
+    app.use('/api/v1/article', require('../api/article'))
+    app.use('/api/v1/category', require('../api/category'))
 }

@@ -2,54 +2,54 @@
 
 const { vUser, vDev, vData, vMenu, vRole, vRoute, vId } = require('../../helper/validate')
 
-function validateUserMiddleWare(req, res, next) {
+function vUserMW(req, res, next) {
     const { error } = vUser(req.body);
     if (error) return next(error)
     next()
 }
 
-function validateDeviceMiddleWare(req, res, next) {
+function vDeviceMW(req, res, next) {
     const { error } = vDev(req.body);
     if (error) return next(error)
     next()
 }
 
-function validateDataMiddleWare(req, res, next) {
+function vDataMW(req, res, next) {
     const { error } = vData(req.body.macAddress);
     if (error) return next(error)
     next()
 }
 
-function validateMenuMiddleWare(req, res, next) {
+function vMenuMW(req, res, next) {
     const { error } = vMenu(req.body);
     if (error) return next(error)
     next()
 }
 
-function validateRoleMiddleWare(req, res, next) {
+function vRoleMW(req, res, next) {
     const { error } = vRole(req.body);
     if (error) return next(error)
     next()
 }
 
-function validateRouteMiddleWare(req, res, next) {
+function vRouteMW(req, res, next) {
     const { error } = vRoute(req.body);
     if (error) return next(error)
     next()
 }
 
-function validateIDMiddleWare(req, res, next) {
+function vIDMW(req, res, next) {
     const { error } = vId(req.body.id);
     if (error) return next(error)
     next()
 }
 
 module.exports = {
-    validateUserMiddleWare,
-    validateDeviceMiddleWare,
-    validateDataMiddleWare,
-    validateMenuMiddleWare,
-    validateRoleMiddleWare,
-    validateRouteMiddleWare,
-    validateIDMiddleWare
+    vUserMW,
+    vDeviceMW,
+    vDataMW,
+    vMenuMW,
+    vRoleMW,
+    vRouteMW,
+    vIDMW
 }
