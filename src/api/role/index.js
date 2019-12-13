@@ -13,6 +13,7 @@ router.post('/index', admin, controller.index)
 router.post('/create', [admin, vRoleMW], controller.create)
 router.post('/read', [admin, vIDMW], controller.read)
 router.post('/update', [admin, vRoleMW], controller.update)
+router.post('/updateStatus', [admin, vRoleMW], controller.updateStatus)
 router.post('/delete', [admin, vIDMW], controller.delete)
 
 module.exports = router

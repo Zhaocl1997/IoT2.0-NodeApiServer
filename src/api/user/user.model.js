@@ -5,57 +5,48 @@ const fs = require('fs')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
 const Device = require('../device/device.model')
-const { avatarPath } = require('../../helper/config')
+// const { avatarPath } = require('../../helper/config')
 
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-        min: 3,
-        max: 16
+        required: true, // 必须
+        minlength: 2,
+        maxlength: 16
     },
     email: {
         type: String,
-        unique: true, // 唯一
-        required: true,
-        trim: true,
-        lowercase: true
+        required: true, // 必须
+        unique: true // 唯一
     },
     phone: {
         type: String,
-        unique: true, // 唯一
-        required: true,
-        trim: true,
-        lowercase: true
+        required: true, // 必须
+        unique: true // 唯一
     },
     password: {
         type: String,
-        required: true,
-        trim: true
+        required: true // 必须
     },
     role: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
+        required: true, // 必须
         ref: 'Role'
     },
     gender: {
         type: String,
-        default: '保密',
-        trim: true,
-        lowercase: true
+        default: '保密'
     },
     birth: {
-        type: Object
+        year: Number,
+        month: Number,
+        day: Number
     },
     area: {
         type: Array
     },
     avatar: {
-        type: String,
-        trim: true,
-        lowercase: true
+        type: String
     },
     status: {
         type: Boolean,
@@ -108,32 +99,26 @@ userSchema.methods.generateAuthToken = async function () {
  * 静态方法：通过凭据(email/phone)查找用户并验证密码
  * 登录使用
  */
-userSchema.statics.findByCredentialsAndCheckPass = async (body) => {
+userSchema.statics.findAndCheck = async (email, phone, pwd) => {
     const user = await User.findOne(
-        {
-            $or:
-                [
-                    { email: body.email },
-                    { phone: body.phone }
-                ]
-        },
-        '_id name role status password area'
+        { $or: [{ email }, { phone }] },
+        '_id name role status password'
     )
-    if (!user) throw new Error('您的帐号不存在哦~')
+    if (!user) throw new Error('用户不存在')
 
-    const isMatch = await bcrypt.compare(body.password, user.password)
-    if (!isMatch) throw new Error('您的密码输入错误~')
+    const isMatch = await bcrypt.compare(pwd, user.password)
+    if (!isMatch) throw new Error('密码输入错误')
+
     return user
 }
 
 /**
- * 静态方法：通过凭据(email/phone)查找用户是否存在,解决email/phone唯一性问题
+ * 静态方法：通过凭据(email/phone)查找用户是否存在,解决(email/phone)唯一性问题
  * 注册或新建和修改时使用
  */
 userSchema.statics.isExist = async (body) => {
     const user = await User.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ phone: body.phone }, { email: body.email }] }] })
-
-    if (user) { throw new Error('用户已存在~') }
+    if (user) throw new Error('用户已存在')
     return user
 }
 
@@ -156,11 +141,11 @@ userSchema.pre('remove', async function (next) {
     const avatarName = `${user._id}.png`
     await Device.deleteMany({ createdBy: user._id })
 
-    if (user.avatar) {
-        fs.unlink(avatarPath + avatarName, (err) => {
-            if (err) throw err;
-        })
-    }
+    // if (user.avatar) {
+    //     fs.unlink(avatarPath + avatarName, (err) => {
+    //         if (err) throw err;
+    //     })
+    // }
 
     next()
 })

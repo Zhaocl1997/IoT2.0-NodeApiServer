@@ -4,12 +4,14 @@
 
 'use strict'
 
-const path = require('path')
 const fs = require('fs')
+const path = require('path')
+const Logger = require('../api/logger/logger.model')
+const { timeFormat } = require('../helper/public')
 
 // 路径
 const staticPath = path.join(__dirname, process.env.STATIC_DIR)
-const logPath = path.join(__dirname, process.env.ACCESSLOG_DIR)
+// const logPath = path.join(__dirname, process.env.ACCESSLOG_DIR)
 const svgPath = path.join(__dirname, process.env.SVG_DIR)
 const cameraPath = path.join(__dirname, process.env.CAMERA_DIR)
 const avatarPath = path.join(__dirname, process.env.AVATAR_DIR)
@@ -27,11 +29,38 @@ const staticOptions = {
     }
 }
 
-// 访问日志配置
-const accessLogStream = fs.createWriteStream(
-    logPath,
-    { flags: "a" }
-)
+// margan 文件
+// const accessLogStream = fs.createWriteStream(
+//     logPath,
+//     { flags: "a" }
+// )
+
+// morgan 数据库
+const morganOptions = (tokens, req, res) => {
+    const method = tokens['method'](req, res)
+    const url = tokens['url'](req, res)
+    const httpVersion = tokens['http-version'](req, res)
+    const statusCode = tokens['status'](req, res)
+    const referrer = tokens['referrer'](req, res) || 'postman'
+    const userAgent = tokens['user-agent'](req, res)
+    const remoteAddress = tokens['remote-addr'](req, res)
+    const requestTime = timeFormat(tokens['date'](req, res), 'YYYY-MM-DD HH:mm:ss')
+    const responseTime = tokens['response-time'](req, res)
+
+    if (method === 'POST') {
+        Logger.create({
+            method,
+            url,
+            httpVersion,
+            statusCode,
+            referrer,
+            userAgent,
+            remoteAddress,
+            requestTime,
+            responseTime
+        })
+    }
+}
 
 // 验证码配置
 const svgOptions = {
@@ -50,7 +79,8 @@ const svgOptions = {
 module.exports = {
     staticOptions,
     staticPath,
-    accessLogStream,
+    // accessLogStream,
+    morganOptions,
     svgOptions,
     svgPath,
     cameraPath,

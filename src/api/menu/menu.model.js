@@ -5,15 +5,15 @@ const mongoose = require('mongoose')
 const submenuSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
+        required: true // 必须
     },
     icon: {
         type: String,
-        required: true
+        required: true // 必须
     },
     index: {
         type: String,
-        required: true
+        required: true // 必须
     },
 }, {
     versionKey: false,
@@ -23,15 +23,15 @@ const submenuSchema = new mongoose.Schema({
 const menuSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true,
+        required: true // 必须
     },
     icon: {
         type: String,
-        required: true
+        required: true // 必须
     },
     index: {
         type: String,
-        required: true,
+        required: true // 必须
     },
     subs: [submenuSchema],
 }, {

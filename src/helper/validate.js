@@ -5,7 +5,7 @@ const Joi = require('@hapi/joi')
 /**
  * 验证：Joi验证Role
  */
-function vRole(role) {
+const vRole = (role) => {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('角色ID字段格式错误')),
         name: Joi.string().trim().lowercase().min(3).max(16).error(new Error('角色名称字段格式错误')),
@@ -19,7 +19,7 @@ function vRole(role) {
 /**
  * 验证：Joi验证User
  */
-function vUser(user) {
+const vUser = (user) => {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('用户ID字段格式错误')),
         name: Joi.string().trim().lowercase().min(3).max(16).error(new Error('用户名称字段格式错误')),
@@ -44,10 +44,10 @@ function vUser(user) {
 /**
  * 验证：Joi验证Device
  */
-function vDev(device) {
+const vDev = (device) => {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('设备ID字段格式错误')),
-        name: Joi.string().trim().lowercase().min(3).max(16).error(new Error('设备名称字段格式错误')),
+        name: Joi.string().trim().lowercase().min(2).max(16).error(new Error('设备名称字段格式错误')),
         macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误')),
         type: Joi.string().trim().lowercase().error(new Error('设备类型字段格式错误')),
         status: Joi.boolean().error(new Error('设备状态字段格式错误'))
@@ -58,7 +58,7 @@ function vDev(device) {
 /**
  * 验证：Joi验证Data
  */
-function vData(macAddress) {
+const vData = (macAddress) => {
     const schema = Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误!'))
     return schema.validate(macAddress);
 }
@@ -66,7 +66,7 @@ function vData(macAddress) {
 /**
  * 验证：Joi验证Menu
  */
-function vMenu(menu) {
+const vMenu = (menu) => {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('菜单ID字段格式错误')),
         title: Joi.string().trim().lowercase().min(3).max(16).error(new Error('菜单标题字段格式错误')),
@@ -80,7 +80,7 @@ function vMenu(menu) {
 /**
  * 验证：Joi验证Route
  */
-function vRoute(route) {
+const vRoute = (route) => {
     const schema = Joi.object({
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID字段格式错误')),
         path: Joi.string().trim().lowercase().error(new Error('路由路径字段格式错误')),
@@ -95,7 +95,7 @@ function vRoute(route) {
 /**
  * 验证：Joi验证ID
  */
-function vId(id) {
+const vId = (id) => {
     const schema = Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('ID字段格式错误'))
     return schema.validate(id);
 }
@@ -103,14 +103,12 @@ function vId(id) {
 /**
  * 验证：字段
  */
-function vField(body, arr) {
+const vField = (body, arr) => {
     const updates = Object.keys(body)
-    const isValidOperation = updates.every((update) => arr.includes(update))
+    if (updates.length !== arr.length) throw new Error('请求字段不合法')
 
-    if (!isValidOperation) {
-        throw new Error("请求字段不合法!")
-    }
-    return
+    const isValidOperation = updates.every((update) => arr.includes(update))
+    if (!isValidOperation) throw new Error("请求字段不合法")
 }
 
 module.exports = {

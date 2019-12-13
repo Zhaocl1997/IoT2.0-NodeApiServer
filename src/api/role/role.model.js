@@ -6,23 +6,15 @@ const roleSchema = new mongoose.Schema({
     name: {
         type: String,
         unique: true, // 唯一
-        required: true,
-        trim: true,
-        lowercase: true,
-        min: 3,
-        max: 16
+        required: true // 必须
     },
     describe: {
         type: String,
-        required: true,
-        trim: true,
-        lowercase: true,
-        min: 3,
-        max: 16
+        required: true // 必须
     },
     menu: {
         type: Array,
-        required: true
+        required: true // 必须
     },
     status: {
         type: Boolean,
@@ -49,8 +41,8 @@ roleSchema.virtual('userCount', {
  */
 roleSchema.statics.isExist = async (body) => {
     const role = await Role.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ name: body.name }] }] })
+    if (role) throw new Error('角色已存在')
 
-    if (role) { throw new Error('角色已存在~') }
     return role
 }
 

@@ -15,6 +15,7 @@ router.post('/options', admin, controller.options)
 router.post('/create', [admin, vRouteMW], controller.create)
 router.post('/read', [admin, vIDMW], controller.read)
 router.post('/update', [admin, vRouteMW], controller.update)
+router.post('/updateNeedLogin', [admin, vRouteMW], controller.updateNeedLogin)
 router.post('/delete', [admin, vIDMW], controller.delete)
 
 module.exports = router

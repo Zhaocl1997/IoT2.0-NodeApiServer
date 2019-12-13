@@ -37,10 +37,10 @@ exports.index = async (req, res, next) => {
 
     // 聚合查询
     Menu.aggregate([
-        { $unwind: '$subs' },
-        { $match: { 'subs._id': { $in: id } } },
+        { '$unwind': '$subs' },
+        { '$match': { 'subs._id': { '$in': id } } },
         {
-            $group: {
+            '$group': {
                 '_id': '$_id',
                 'title': { '$first': '$title' },
                 'icon': { '$first': '$icon' },
@@ -48,7 +48,7 @@ exports.index = async (req, res, next) => {
                 'subs': { '$push': '$subs' }
             }
         },
-        { $sort: { '_id': 1, } },
+        { '$sort': { '_id': 1, } },
     ]).exec((err, menu) => {
         if (err) throw new Error(err)
         res.json({ code: "000000", data: menu })
@@ -66,8 +66,7 @@ exports.create = async (req, res, next) => {
         // 验证字段
         vField(req.body, ["title", "icon", "index"])
 
-        const menu = new Menu(req.body)
-        await menu.save()
+        await Menu.create(req.body)
         res.json({ code: "000000", data: { data: true } })
     } else {
         // 验证字段
@@ -92,7 +91,7 @@ exports.read = async (req, res, next) => {
     vField(req.body, ["_id"])
 
     const menu = await Menu.findById(req.body._id)
-    if (!menu) { throw new Error('菜单不存在') }
+    if (!menu) throw new Error('菜单不存在')
     res.json({ code: "000000", data: { data: menu } })
 }
 
@@ -103,12 +102,12 @@ exports.read = async (req, res, next) => {
  * @description admin 
  */
 exports.update = async (req, res, next) => {
-    const menu = await Menu.findById(req.body._id)
-    if (menu) {
+    if (req.body.subs) {
         // 验证字段
         vField(req.body, ["title", "icon", "index", "_id", "subs"])
 
-        await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
+        const menu = await Menu.findByIdAndUpdate(req.body._id, req.body, { new: true })
+        if (!menu) throw new Error('菜单不存在')
         res.json({ code: "000000", data: { data: { data: true } } })
     } else {
         // 验证字段
@@ -138,34 +137,29 @@ exports.delete = async (req, res, next) => {
 
     // 删除菜单时同时删除角色表里menu数组里的相应ID
     // 仅限于删除二级菜单的ID
-    await Role
-        .find()
-        .exec(async (err, role) => {
-            if (err) throw new Error(err)
-            for (let i = 0; i < role.length; i++) {
-                const element = role[i];
+    const role = await Role.find()
 
-                for (let j = 0; j < element.menu.length; j++) {
-                    const menuID = element.menu[j];
+    for (let i = 0; i < role.length; i++) {
+        const element = role[i];
 
-                    if (req.body._id.toString() === menuID.toString()) {
-                        element.menu.splice(j, 1)
-                        await element.save()
-                    }
-                }
+        for (let j = 0; j < element.menu.length; j++) {
+            const menuID = element.menu[j];
+
+            if (req.body._id.toString() === menuID.toString()) {
+                element.menu.splice(j, 1)
+                await element.save()
             }
-        })
+        }
+    }
 
-    const menu = await Menu.findById(req.body._id)
+    const menu = await Menu.findById(req.body._id)    
     if (menu) {
         await menu.remove()
         res.json({ code: "000000", data: { data: true } })
     } else {
-        await Menu.findOne({ "subs._id": req.body._id }, async (err, menu) => {
-            if (err) throw new Error(err)
-            menu.subs.id(req.body._id).remove() // 不触发remove的钩子
-            await menu.save()
-            res.json({ code: "000000", data: { data: true } })
-        })
+        const menu = await Menu.findOne({ "subs._id": req.body._id })
+        menu.subs.id(req.body._id).remove() // 不触发remove的钩子
+        await menu.save()
+        res.json({ code: "000000", data: { data: true } })
     }
 }

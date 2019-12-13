@@ -16,7 +16,7 @@ const articleSchema = new mongoose.Schema({
         required: true
     },
     category: {
-        type: Number,
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Category'
     },

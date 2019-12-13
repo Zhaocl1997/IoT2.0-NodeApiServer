@@ -1,6 +1,8 @@
 'use strict'
 
 const Article = require('./article.model')
+const { vField } = require('../../helper/validate')
+const { index_params } = require('../../helper/public')
 
 /**
  * @method index
@@ -9,29 +11,28 @@ const Article = require('./article.model')
  * @description public 
  */
 exports.index = async (req, res, next) => {
-    const currentPage = req.body.pagenum || 1;
-    const perPage = req.body.pagerow
-    const filters = req.body.filters
+    // 验证字段
+    vField(req.body, ["sortOrder", "sortField", "pagenum", "pagerow", "filters"])
 
-    const titleRegex = new RegExp(filters, 'i')
+    const base = index_params(req.body)
 
-    let total = await Article.find({ title: titleRegex }).countDocuments()
-    let result = await Article
-        .find({ title: titleRegex })
-        //.populate('creator', 'name  -_id')     //返回关系数据
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
-
-    let resultdata = {
-        total,
-        data: result
+    // 查询
+    const filter = {
+        $or: [
+            { title: { $regex: base.reg } },
+            { author: { $regex: base.reg } },
+            { category: { $regex: base.reg } }
+        ]
     }
 
-    res.json({
-        code: "000000",
-        data: resultdata
+    const total = await Article.find(filter).countDocuments()
+    const data = await Article.find(filter)
+        .skip(base.skip).limit(base.limit).sort(base.sort)
+        .populate({ path: 'author' })
+        .populate({ path: "category" })
+        .lean()
 
-    })
+    res.json({ code: "000000", data: { total, data } })
 }
 
 /**

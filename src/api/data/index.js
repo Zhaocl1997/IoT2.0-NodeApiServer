@@ -10,6 +10,7 @@ const router = new express.Router()
 
 // user
 router.post('/index', base, controller.index)
+router.post('/indexByMac', base, controller.indexByMac)
 router.post('/onLED', [base, vDataMW], controller.onLED)
 
 // admin

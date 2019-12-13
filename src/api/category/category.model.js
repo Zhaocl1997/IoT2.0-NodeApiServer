@@ -3,20 +3,22 @@
 const mongoose = require('mongoose')
 
 const categorySchema = new mongoose.Schema({
-    _id: {
-        type: Number,
-        required: true,
-        default: 0
-    },
-    parent_id: {
-        type: Number,
-        required: true,
-        default: 0
-    },
     name: {
         type: String,
         required: true
     },
+    subs: [{
+        name: {
+            type: String,
+            required: true
+        },
+        subs: [{
+            name: {
+                type: String,
+                required: true
+            }
+        }]
+    }],
     flag: {
         type: Boolean,
         default: false

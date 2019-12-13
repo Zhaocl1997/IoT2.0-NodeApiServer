@@ -19,13 +19,12 @@ const userinfo =
     "phone": ""
 }
 
-
 const options = {
     method: 'POST',
     url: 'xxxxxxxx',
     headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGMyYTkzM2JjZDlmYjMxYjg4ZjE4NjMiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE1NzMxODkzNjEsImV4cCI6MTU3MzIxODE2MX0.ILRXisW5OVZEuFLhNGiS8_rfwoAhKvhZiTyrC2i8Fp0"
+        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZGM2NWM2ZGVhNjg2NTAxYmNjNDdhMTgiLCJyb2xlIjoiNWRjNjVjOGNjZTU1MDcyNTM4YTc2ZjRjIiwiaWF0IjoxNTc1ODgzMDgzLCJleHAiOjE1NzU5MTE4ODN9.GOjO86VOtQ621-LcOF_GvpL9ZDyNnZh05Y5lA-q7Vnw"
     },
     json: "xxxxxx",
 };
@@ -47,25 +46,22 @@ for (let index = 10; index < 100; index++) {
             /**
              * device 
              */
-            // deviceinfo.name = "device" + index
-            // deviceinfo.macAddress = "A7:2C:6D:03:8C:" + index
-            // deviceinfo.type = "camera"
-            // deviceinfo.status = false
-
-            // options.url = "http://localhost:3000/api/v1/device/create"
-            // options.json = deviceinfo
+            deviceinfo.name = "device" + index
+            deviceinfo.macAddress = "A7:2C:6D:03:8C:" + index
+            deviceinfo.type = "camera"
+            options.url = "http://localhost:3000/api/v1/device/create"
+            options.json = deviceinfo
 
             /**
              * user 
              */
-            userinfo.name = "useruser" + index
-            userinfo.password = "useruser" + index
-            userinfo.email = "user" + index + "@qq.com"
-            userinfo.phone = "122222222" + index
-            userinfo.role = "user"
-            userinfo.status = false
-            options.url = "http://localhost:3000/api/v1/user/create"
-            options.json = userinfo
+            // userinfo.name = "useruser" + index
+            // userinfo.password = "zcl19971222"
+            // userinfo.email = "user" + index + "@qq.com"
+            // userinfo.phone = "122222222" + index
+            // userinfo.role = "5dd5361dc1e9260b74a24c89"
+            // options.url = "http://localhost:3000/api/v1/user/create"
+            // options.json = userinfo
 
             request(options, callback)
         }

@@ -4,34 +4,39 @@
 
 'use strict'
 
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 const chalk = require('chalk')
-mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise
 
-function openConnect() {
-    mongoose
+const uri = process.env.MONGODB_URI
+
+const openConnect = async () => {
+    await mongoose
         .connect(
-            process.env.MONGODB_URL,
+            uri,
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
                 useFindAndModify: false,
-                useCreateIndex: true
+                useCreateIndex: true,
+                autoIndex: false
             })
-        .then(() => console.log(chalk.black.bgMagenta('Mongo connected to ' + process.env.MONGODB_URL)))
-        .catch(err => console.log(chalk.black.bgRed('Mongodb connect error'), err))
+        .then(() =>
+            console.log(chalk.black.bgWhite('Mongo connected to ' + uri)))
+        .catch(err =>
+            console.log(chalk.red.bgWhite('Mongodb connect error'), err))
 }
 
-async function closeConnect() {
-    // await oracledb.getPool().close();  
+const closeConnect = async () => {
+    // await oracledb.getPool().close()  
 }
 
-async function startupDB() {
+const startupDB = async () => {
     try {
-        openConnect();
+        await openConnect()
     } catch (err) {
-        console.error(err);
-        process.exit(1); // Non-zero failure code
+        console.error(err)
+        process.exit(1) // Non-zero failure code
     }
 }
 

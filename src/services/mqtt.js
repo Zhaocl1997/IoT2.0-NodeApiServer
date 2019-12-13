@@ -27,7 +27,7 @@ const client = mqtt.connect({
 
 // 建立连接
 client.on('connect', () => {
-  console.log(chalk.black.bgBlue(clientId + ' connected to ' + host + ' on port ' + port))
+  console.log(chalk.black.bgWhite(clientId + ' connected to ' + host + ' on port ' + port))
 
   // 订阅设备的反馈
   client.subscribe('api/feedback')
@@ -50,33 +50,21 @@ client.on('message', async (topic, message) => {
       client.publish(`device/feedback/${mac}`, mac)
       break;
 
-    case 'api/pi/dht11/data':
-      const DHT11Data = JSON.parse(message.toString())
+    case 'api/pi/dht11/data': {
+      const data = JSON.parse(message.toString())
+      const device = await Device.findOne({ macAddress: data.macAddress })
+      const result = new Data({ ...data, createdBy: device._id })
+      await result.save()
+      console.log('DHT11_Data Saved')
+    } break;
 
-      const dht11Device = await Device.find({ macAddress: DHT11Data.macAddress })
-
-      const dht11 = new Data({
-        ...DHT11Data,
-        createdBy: dht11Device[0]._id
-      })
-      await dht11.save()
-
-      console.log('DHT11_Data Saved :', dht11.data)
-      break;
-
-    case 'api/pi/camera/data':
-      const cameraData = JSON.parse(message.toString())
-
-      const cameraDevice = await Device.find({ macAddress: cameraData.macAddress })
-
-      const camera = new Data({
-        ...cameraData,
-        createdBy: cameraDevice[0]._id
-      })
-      await camera.save()
-
-      console.log('Camera_Data Saved :', camera.data)
-      break;
+    case 'api/pi/camera/data': {
+      const data = JSON.parse(message.toString())
+      const device = await Device.findOne({ macAddress: data.macAddress })
+      const result = new Data({ ...data, createdBy: device._id })
+      await result.save()
+      console.log('Camera_Data Saved')
+    } break;
 
     default:
       break;

@@ -8,8 +8,7 @@ const chalk = require('chalk')
 const session = require('express-session')
 const { getNow } = require('../helper/public')
 
-
-function loggerMW(req, res, next) {
+const loggerMW = (req, res, next) => {
     if (req.method === 'POST') {
         console.log(
             chalk.redBright(`[请求时间]: ${getNow()}`),
@@ -20,21 +19,36 @@ function loggerMW(req, res, next) {
     next()
 }
 
-function get404MW(req, res, next) {
-    res.json({
+const get404MW = (req, res, next) => {
+    res.status(404).json({
         code: "999999",
         message: "Page Not Found"
     })
 }
 
-function get500MW(error, req, res, next) {
-    res.json({
-        code: "999999",
-        message: error.message
-    })
+const get500MW = (err, req, res, next) => {
+    // Mongoose bad ObjectId error
+    if (err.name === 'CastError') {
+        const message = `ID为${err.value}的数据不存在`
+        err.message = message
+    }
+
+    // Mongoose duplicate key error
+    if (err.name === 'MongoError' && err.code === 11000) {
+        const message = `${Object.keys(err.keyValue)}已存在`
+        err.message = message
+    }
+
+    // Mongoose validation error
+    if (err.name === 'ValidationError') {
+        const message = `字段${err.details[0].message.split('"')[1]}不合法`
+        err.message = message
+    }
+
+    res.json({ code: "999999", message: err.message })
 }
 
-function corsMW(req, res, next) {
+const corsMW = (req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_URL)
     res.setHeader('Access-Control-Allow-Method', 'POST, OPTION')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
@@ -42,7 +56,7 @@ function corsMW(req, res, next) {
     next()
 }
 
-function sessionMW() {
+const sessionMW = () => {
     return session({
         name: process.env.SESSION_NAME,
         secret: process.env.SESSION_SERECT,

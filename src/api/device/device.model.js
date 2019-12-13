@@ -6,20 +6,17 @@ const Data = require('../data/data.model')
 const deviceScheme = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        unique: true, // 唯一
-        trim: true,
-        min: 3,
-        max: 16
+        required: true, // 必须
+        unique: true // 唯一
     },
     macAddress: {
         type: String,
-        required: true,
+        required: true, // 必须
         unique: true  // 唯一
     },
     type: {
         type: String,
-        required: true
+        required: true  // 必须
     },
     status: {
         type: Boolean,
@@ -51,8 +48,8 @@ deviceScheme.virtual('dataCount', {
  */
 deviceScheme.statics.isExist = async (body) => {
     const device = await Device.findOne({ $and: [{ _id: { $ne: body._id }, $or: [{ macAddress: body.macAddress }, { name: body.name }] }] })
+    if (device) { throw new Error('设备已存在') }
 
-    if (device) { throw new Error('设备已存在~') }
     return device
 }
 
@@ -84,7 +81,7 @@ deviceScheme.pre('remove', async function (next) {
     const data = await Data.find({ macAddress: device.macAddress })
     for (let i = 0; i < data.length; i++) {
         const oneData = data[i];
-        oneData.isDrop = true
+        oneData.flag = true
         await oneData.save()
     }
     next()

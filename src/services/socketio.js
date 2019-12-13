@@ -32,11 +32,11 @@ module.exports = (io) => {
 
         // 连接socket
         onConnect(socket)
-        console.log(chalk.black.bgCyan('%s connected on %s'), socketID, clientIP)
+        console.log(chalk.blue.bgWhite('%s connected on %s'), socketID, clientIP)
 
         // 监听断开socket事件
         socket.on('disconnect', () => {
-            console.log(chalk.black.bgRed('%s Disconnected'), socketAddress);
+            console.log(chalk.red.bgWhite('%s Disconnected'), socketAddress);
         })
     })
 }

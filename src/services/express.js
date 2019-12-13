@@ -22,7 +22,8 @@ const {
 const {
     staticOptions,
     staticPath,
-    accessLogStream
+    // accessLogStream,
+    morganOptions
 } = require('../helper/config')
 
 module.exports = (app) => {
@@ -34,7 +35,8 @@ module.exports = (app) => {
     // HTTP保护/压缩文件/记录日志中间件
     app.use(helmet())
     app.use(compression())
-    app.use(morgan('combined', { stream: accessLogStream }))
+    // app.use(morgan('short', { stream: dbStream })) // 文件
+    app.use(morgan(morganOptions)) // 数据库
 
     // log中间件 
     app.use(loggerMW)

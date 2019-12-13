@@ -26,16 +26,35 @@ IoT2.0-Server
 │  index.js
 │
 ├─api
+│  ├─article
+│  │      article.controllers.js
+│  │      article.model.js
+│  │      index.js
+│  │
+│  ├─category
+│  │      category.controllers.js
+│  │      category.model.js
+│  │      index.js
+│  │
 │  ├─data
 │  │      data.controllers.js
 │  │      data.model.js
 │  │      data.socket.js
 │  │      index.js
 │  │
+│  ├─db
+│  │      db.controllers.js
+│  │      index.js
+│  │
 │  ├─device
 │  │      device.controllers.js
 │  │      device.model.js
 │  │      index.js
+│  │
+│  ├─logger
+│  │      index.js
+│  │      logger.controllers.js
+│  │      logger.model.js
 │  │
 │  ├─menu
 │  │      index.js
@@ -59,9 +78,13 @@ IoT2.0-Server
 │
 ├─helper
 │      config.js
+│      db.js
+│      oss.js
 │      public.js
 │      request.js
+│      seeder.js
 │      validate.js
+│      weather.js
 │
 ├─middleware
 │  │  admin.js
@@ -72,7 +95,6 @@ IoT2.0-Server
 │  │      authentication.js
 │  │      authorization.js
 │  │      login.js
-│  │      register.js
 │  │
 │  └─validate
 │          avatar.js
@@ -86,19 +108,20 @@ IoT2.0-Server
 │      routes.js
 │      socketio.js
 │
-└─static
-    ├─avatar
-    │      5dc65c6dea686501bcc47a18.png
-    │
-    ├─camera
-    │      2019_11_15_08_54_41_b8-27-eb-e8-70-24.jpg
-    │
-    ├─fonts
-    │      Hack-Regular.ttf
-    │      SegoeUISoundlines.ttf
-    │
-    └─logs
-            access.log
+├─staticfile
+│  ├─avatar
+│  │
+│  └─fonts
+│          Hack-Regular.ttf
+│          SegoeUISoundlines.ttf
+│
+└─_data
+        data.json
+        device.json
+        menu.json
+        role.json
+        route.json
+        user.json
 ```
 
 ### Usage
