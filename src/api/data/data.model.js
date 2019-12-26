@@ -3,10 +3,6 @@
 const mongoose = require('mongoose')
 
 const dataSchema = new mongoose.Schema({
-    macAddress: {
-        type: String,
-        required: true // 必须
-    },
     data: {
         type: mongoose.Mixed,
         required: true // 必须
@@ -15,13 +11,16 @@ const dataSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    createdBy: {
+    cB: {
         type: mongoose.Schema.Types.ObjectId,
         required: true, // 必须
         ref: 'Device'
     }
 }, {
-    timestamps: true,
+    timestamps: {
+        createdAt: 'cA',
+        updatedAt: false
+    },
     versionKey: false
 })
 
@@ -30,7 +29,7 @@ const dataSchema = new mongoose.Schema({
  *  post中间件：数据保存后,socket发布一个事件
  */
 dataSchema.post('save', (doc) => {
-    require('./data.socket').onSave(doc)
+    require('../../helper/socket').onNewData(doc)
 })
 
 const Data = mongoose.model('Data', dataSchema)

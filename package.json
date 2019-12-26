@@ -43,8 +43,9 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
-    "pm2": "env-cmd -f ./config/prod.env pm2 start src/index.js",
     "prod": "env-cmd -f ./config/prod.env node src/index.js",
+    "pm2": "env-cmd -f ./config/prod.env pm2 start src/index.js",
+    "pub": "D:\\projects\\IOT2.0\\command\\Server.bat",
     "test": "env-cmd -f ./config/test.env jest --watchAll --runInBand"
   },
   "jest": {

@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose')
 const Data = require('./data.model')
+const Device = require('../device/device.model')
 const { vField } = require('../../helper/validate')
 const { index_params } = require('../../helper/public')
 
@@ -10,15 +11,13 @@ const data_aggregate = (page, sort, filter) => {
     const group = [
         {
             '$group': {
-                '_id': '$createdBy',
-                'macAddress': { '$first': '$macAddress' },
+                '_id': '$cB',
                 'data': {
                     '$push': {
                         '_id': '$_id',
                         'data': '$data',
                         'flag': '$flag',
-                        'createdAt': '$createdAt',
-                        'updatedAt': '$updatedAt'
+                        'cA': '$cA'
                     }
                 }
             }
@@ -32,19 +31,19 @@ const data_aggregate = (page, sort, filter) => {
                 'from': 'devices',
                 'localField': '_id',
                 'foreignField': '_id',
-                'as': 'createdBy'
+                'as': 'cB'
             }
         },
-        { '$unwind': "$createdBy" },
+        { '$unwind': "$cB" },
         {
             '$lookup': {
                 'from': 'users',
-                'localField': 'createdBy.createdBy',
+                'localField': 'cB.createdBy',
                 'foreignField': '_id',
-                'as': 'createdBy.createdBy'
+                'as': 'cB.createdBy'
             }
         },
-        { '$unwind': "$createdBy.createdBy" }
+        { '$unwind': "$cB.createdBy" }
     ]
 
     // 重构
@@ -52,12 +51,11 @@ const data_aggregate = (page, sort, filter) => {
         {
             '$project': {
                 '_id': 1,
-                'macAddress': 1,
                 'total': 1,
-                'devicetype': '$createdBy.type',
-                'devicename': '$createdBy.name',
-                'userID': '$createdBy.createdBy._id',
-                'username': '$createdBy.createdBy.name',
+                'devicetype': '$cB.type',
+                'devicename': '$cB.name',
+                'userID': '$cB.createdBy._id',
+                'username': '$cB.createdBy.name',
                 'data': 1
             }
         }
@@ -92,11 +90,11 @@ const data_aggregate = (page, sort, filter) => {
         ...project,
         ...match,
         { '$unwind': '$data' }, // 拆分
-        ...facet
+        ...facet,
     ]
 
     return new Promise((resolve, reject) => {
-        Data.aggregate(query).exec((err, data) => {
+        Data.aggregate(query).allowDiskUse(true).exec((err, data) => {
             if (err) reject(err)
             const res = data.length === 0
                 ? { total: 0, data: [] }
@@ -127,11 +125,8 @@ exports.index = async (req, res, next) => {
     // 排序
     let sort
     switch (sortField) {
-        case "createdAt":
-            sort = { 'data.createdAt': sortOrder }
-            break;
-        case "updatedAt":
-            sort = { 'data.updatedAt': sortOrder }
+        case "cA":
+            sort = { 'data.cA': sortOrder }
             break;
 
         default:
@@ -210,7 +205,7 @@ exports.index = async (req, res, next) => {
                         { 'userID': userID },
                         { 'devicetype': deviceType },
                         { '_id': deviceID },
-                        { 'data.createdAt': { '$gte': new Date(start), '$lte': new Date(stop) } }
+                        { 'data.cA': { '$gte': new Date(start), '$lte': new Date(stop) } }
                     ]
                 }
             }
@@ -236,9 +231,11 @@ exports.indexByMac = async (req, res, next) => {
 
     const base = index_params(req.body)
 
-    const total = await Data.find({ macAddress: req.body.macAddress }).countDocuments()
-    const data = await Data.find({ macAddress: req.body.macAddress })
-        .limit(base.limit).skip(base.skip).sort({ createdAt: -1 })
+    const device = await Device.findOne({ macAddress: req.body.macAddress })
+
+    const total = await Data.find({ cB: device._id }).countDocuments()
+    const data = await Data.find({ cB: device._id })
+        .limit(base.limit).skip(base.skip).sort({ cA: -1 })
 
     res.json({ code: "000000", data: { data, total } })
 }
@@ -278,8 +275,8 @@ exports.create = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
     // 验证字段
     vField(req.body, ["_id"])
-    req.body.flag = true
-
-    await Data.findByIdAndUpdate(req.body._id, req.body)
+    const data = await Data.findById(req.body._id)
+    data.flag = true
+    await data.save()
     res.json({ code: '000000', data: { data: true } })
 }

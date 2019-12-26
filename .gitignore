@@ -2,4 +2,4 @@ config
 tests
 node_modules
 src/staticfile
-src/_data
+src/db/_data

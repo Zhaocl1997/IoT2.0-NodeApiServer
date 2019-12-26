@@ -38,6 +38,10 @@ const loggerSchema = new mongoose.Schema({
     responseTime: {
         type: Number,
         required: true
+    },
+    username: {
+        type: String,
+        required: true
     }
 }, {
     versionKey: false

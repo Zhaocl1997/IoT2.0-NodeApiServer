@@ -40,12 +40,13 @@ const morganOptions = (tokens, req, res) => {
     const method = tokens['method'](req, res)
     const url = tokens['url'](req, res)
     const httpVersion = tokens['http-version'](req, res)
-    const statusCode = tokens['status'](req, res)
+    const statusCode = tokens['status'](req, res) || 500
     const referrer = tokens['referrer'](req, res) || 'postman'
     const userAgent = tokens['user-agent'](req, res)
-    const remoteAddress = tokens['remote-addr'](req, res)
+    const remoteAddress = req.headers.clientip || '127.0.0.1'
     const requestTime = timeFormat(tokens['date'](req, res), 'YYYY-MM-DD HH:mm:ss')
-    const responseTime = tokens['response-time'](req, res)
+    const responseTime = tokens['response-time'](req, res) || 0
+    const username = req.user ? req.user.name : 'notLoggedIn'
 
     if (method === 'POST') {
         Logger.create({
@@ -57,7 +58,8 @@ const morganOptions = (tokens, req, res) => {
             userAgent,
             remoteAddress,
             requestTime,
-            responseTime
+            responseTime,
+            username
         })
     }
 }

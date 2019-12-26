@@ -2,15 +2,15 @@
 
 const express = require('express')
 const controller = require('./article.controllers')
-const admin = require('../../middleware/admin')
+const base = require('../../middleware/base')
 
 const router = new express.Router()
 
-// admin
-router.post('/index', admin, controller.index)
-router.post('/create', admin, controller.create)
-router.post('/read', admin, controller.read)
-router.post('/update', admin, controller.update)
-router.post('/delete', admin, controller.delete)
+// base
+router.post('/index', base, controller.index)
+router.post('/create', base, controller.create)
+router.post('/read', base, controller.read)
+router.post('/update', base, controller.update)
+router.post('/delete', base, controller.delete)
 
 module.exports = router

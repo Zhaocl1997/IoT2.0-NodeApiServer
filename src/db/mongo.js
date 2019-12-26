@@ -1,8 +1,8 @@
-/**
- * mongo 配置
- */
-
 'use strict'
+
+/**
+ * db 链接
+ */
 
 const mongoose = require('mongoose')
 const chalk = require('chalk')

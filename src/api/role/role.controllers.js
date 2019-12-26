@@ -104,8 +104,10 @@ exports.updateStatus = async (req, res, next) => {
     // 验证字段
     vField(req.body, ["_id", "status"])
 
-    const role = await Role.findByIdAndUpdate(req.body._id, req.body, { new: true })
+    const role = await Role.findById(req.body._id)
     if (!role) throw new Error('角色不存在')
+    role.status = req.body.status
+    await role.save()
     res.json({ code: "000000", data: { data: true } })
 }
 

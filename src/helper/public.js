@@ -1,6 +1,6 @@
 'use strict'
 
-// mongoDB时间转换为日期
+// 时间格式转换
 const timeFormat = (time, format) => {
     const t = new Date(time) // 2019-11-09T06:27:57.040Z
     const tf = (i) => { return (i < 10 ? '0' : '') + i }
@@ -48,6 +48,11 @@ const index_params = (body) => {
             sort = { status: body.sortOrder }
             break
 
+        // route
+        case "meta.needLogin":
+            sort = { "meta.needLogin": body.sortOrder }
+            break
+
         // device
         case "type":
             sort = { type: body.sortOrder }
@@ -76,4 +81,40 @@ const index_params = (body) => {
     return { skip, limit, sort, reg }
 }
 
-module.exports = { timeFormat, getNow, index_params }
+// 分类递归
+const toTreeData = (data, pid) => {
+    function tree(id) {
+        let arr = []
+        data.filter(item => {
+            return item.parentID.toString() === id;
+        }).forEach(item => {
+            arr.push({
+                _id: item._id,
+                name: item.name,
+                key: item.key,
+                desc: item.desc,
+                subs: tree(item._id.toString()),
+                articles: item.articles,
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt
+            })
+        })
+        return arr
+    }
+    return tree(pid)  // 第一级节点的父id，是null或者0，视情况传入
+}
+
+const toTreeSub = (data) => {
+    for (var i = 0; i < data.length; i++) {
+        if (data[i].subs.length < 1) {
+            // children若为空数组，则将children设为undefined
+            data[i].subs = undefined;
+        } else {
+            // children若不为空数组，则继续 递归调用 本方法
+            toTreeSub(data[i].subs);
+        }
+    }
+    return data;
+}
+
+module.exports = { timeFormat, getNow, index_params, toTreeData, toTreeSub }

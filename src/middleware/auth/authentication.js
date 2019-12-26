@@ -11,10 +11,10 @@ const authenticationMW = async (req, res, next) => {
         const user = await User.findOne({ _id: decoded._id }, '-createdAt -updatedAt')
         if (!user) throw new Error('您的帐号不存在哦~')
 
-        req.user = user        
+        req.user = user
         next()
     } catch (e) {
-        throw new Error('您在进行未认证访问哦')
+        res.json({ code: "888888", message: '您在进行未认证访问哦' })
     }
 }
 

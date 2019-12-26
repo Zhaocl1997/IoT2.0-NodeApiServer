@@ -7,7 +7,7 @@ const Role = require('../role/role.model')
 const { vField } = require('../../helper/validate')
 const { index_params } = require('../../helper/public')
 const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
-const getWather = require('../../helper/weather')
+const getWather = require('../../utils/weather')
 
 const sharp = require('sharp')
 const svgCaptcha = require('svg-captcha')
@@ -51,7 +51,7 @@ exports.login = async (req, res, next) => {
     } else if (req.body.email) {
         vField(req.body, ["password", "email"])
     }
-    
+
     // 生成token
     const token = await req.user.generateAuthToken()
 
@@ -112,14 +112,13 @@ exports.avatar = async (req, res, next) => {
  * @returns { data }
  * @description user 
  */
-exports.weather = (req, res, next) => {
+exports.weather = async (req, res, next) => {
     // 验证字段
     vField(req.body, ["IP"])
 
     const IP = req.body.IP
-    getWather(IP).then(result => {
-        res.json({ code: "000000", data: { data: result } });
-    })
+    const result = await getWather(IP)
+    res.json({ code: "000000", data: { data: result } });
 }
 
 /**
@@ -220,8 +219,10 @@ exports.updateStatus = async (req, res, next) => {
     // 验证字段
     vField(req.body, ["_id", "status"])
 
-    const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
+    const user = await User.findById(req.body._id)
     if (!user) throw new Error('用户不存在')
+    user.status = req.body.status
+    await user.save()
     res.json({ code: "000000", data: { data: true } })
 }
 

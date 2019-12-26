@@ -14,6 +14,6 @@ require('./services/express')(app) // app配置
 require('./services/mqtt') // MQTT配置
 
 // 连接mongodb数据库
-require('./services/mongo').startupDB()
+require('./db/mongo').startupDB()
 
 module.exports = server

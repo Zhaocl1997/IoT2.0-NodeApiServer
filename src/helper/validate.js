@@ -12,8 +12,8 @@ const vRole = (role) => {
         describe: Joi.string().trim().lowercase().min(2).max(10).error(new Error('角色描述字段格式错误')),
         menu: Joi.array().error(new Error('角色权限字段格式错误')),
         status: Joi.boolean().error(new Error('角色状态字段格式错误'))
-    });
-    return schema.validate(role);
+    })
+    return schema.validate(role)
 }
 
 /**
@@ -37,8 +37,8 @@ const vUser = (user) => {
         avatar: Joi.string().trim().lowercase().error(new Error('用户头像字段格式错误')),
         status: Joi.boolean().error(new Error('用户状态字段格式错误')),
         verifyCode: Joi.string().trim().length(4).error(new Error('验证码字段格式错误')),
-    });
-    return schema.validate(user);
+    })
+    return schema.validate(user)
 }
 
 /**
@@ -51,8 +51,8 @@ const vDev = (device) => {
         macAddress: Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误')),
         type: Joi.string().trim().lowercase().error(new Error('设备类型字段格式错误')),
         status: Joi.boolean().error(new Error('设备状态字段格式错误'))
-    });
-    return schema.validate(device);
+    })
+    return schema.validate(device)
 }
 
 /**
@@ -60,7 +60,7 @@ const vDev = (device) => {
  */
 const vData = (macAddress) => {
     const schema = Joi.string().trim().pattern(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/).error(new Error('设备mac字段格式错误!'))
-    return schema.validate(macAddress);
+    return schema.validate(macAddress)
 }
 
 /**
@@ -73,8 +73,8 @@ const vMenu = (menu) => {
         icon: Joi.string().trim().lowercase().error(new Error('菜单图标字段格式错误')),
         index: Joi.string().trim().lowercase().error(new Error('菜单路由字段格式错误')),
         subs: Joi.array()
-    });
-    return schema.validate(menu);
+    })
+    return schema.validate(menu)
 }
 
 /**
@@ -85,11 +85,12 @@ const vRoute = (route) => {
         _id: Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('路由ID字段格式错误')),
         path: Joi.string().trim().lowercase().error(new Error('路由路径字段格式错误')),
         name: Joi.string().trim().lowercase().error(new Error('路由名称字段格式错误')),
-        meta: Joi.object().error(new Error('路由数据字段格式错误')),
         component: Joi.string().trim().lowercase().error(new Error('路由组件字段格式错误')),
-        package: Joi.string().trim().lowercase().error(new Error('路由打包名字段格式错误'))
-    });
-    return schema.validate(route);
+        package: Joi.string().trim().lowercase().error(new Error('路由打包名字段格式错误')),
+        title: Joi.string().trim().lowercase().error(new Error('路由标题字段格式错误')),
+        needLogin: Joi.boolean().error(new Error('路由是否需要登录字段格式错误'))
+    })
+    return schema.validate(route)
 }
 
 /**
@@ -97,7 +98,14 @@ const vRoute = (route) => {
  */
 const vId = (id) => {
     const schema = Joi.string().trim().lowercase().length(24).pattern(/^[0-9a-fA-F]{24}$/).error(new Error('ID字段格式错误'))
-    return schema.validate(id);
+
+    const idArr = Joi.array().items(schema)
+
+    if (id instanceof Array) {
+        return idArr.validate(id)
+    } else {
+        return schema.validate(id)
+    }
 }
 
 /**

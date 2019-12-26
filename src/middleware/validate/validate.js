@@ -39,7 +39,7 @@ const vRouteMW = (req, res, next) => {
 }
 
 const vIDMW = (req, res, next) => {
-    const { error } = vId(req.body.id);
+    const { error } = vId(req.body._id);
     if (error) return next(error)
     next()
 }

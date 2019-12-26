@@ -9,7 +9,7 @@ const socketioJwt = require('socketio-jwt')
 
 // 当用户连接时，执行此函数
 function onConnect(socket) {
-    require('../api/data/data.socket').register(socket)
+    require('../helper/socket').register(socket)
 }
 
 // 暴露
@@ -32,7 +32,8 @@ module.exports = (io) => {
 
         // 连接socket
         onConnect(socket)
-        console.log(chalk.blue.bgWhite('%s connected on %s'), socketID, clientIP)
+        console.log(chalk.black.bgWhite('%s connected on %s with id %s'),
+            socketAddress, clientIP, socketID)
 
         // 监听断开socket事件
         socket.on('disconnect', () => {

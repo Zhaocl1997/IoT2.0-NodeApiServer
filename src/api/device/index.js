@@ -15,5 +15,6 @@ router.post('/read', [base, vIDMW], controller.read)
 router.post('/update', [base, vDeviceMW], controller.update)
 router.post('/updateStatus', [base, vDeviceMW], controller.updateStatus)
 router.post('/delete', [base, vIDMW], controller.delete)
+router.post('/deleteMany', [base, vIDMW], controller.deleteMany)
 
 module.exports = router

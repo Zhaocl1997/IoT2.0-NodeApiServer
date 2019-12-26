@@ -8,7 +8,7 @@ const { vField } = require('../../helper/validate')
 
 /**
  * @method options
- * @param { Object }
+ * @param { null }
  * @return { data } 
  * @description admin
  */

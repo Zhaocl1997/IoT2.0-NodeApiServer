@@ -49,9 +49,20 @@ exports.index = async (req, res, next) => {
  */
 exports.create = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["name", "path", "meta", "package", "component"])
+    vField(req.body, ["name", "path", "package", "component", "title", "needLogin"])
 
-    await Route.create(req.body)
+    const meta = {
+        title: req.body.title,
+        needLogin: req.body.needLogin
+    }
+
+    delete req.body.title
+    delete req.body.needLogin
+
+    await Route.create({
+        ...req.body,
+        meta
+    })
     res.json({ code: '000000', data: { data: true } })
 }
 
@@ -78,7 +89,17 @@ exports.read = async (req, res, next) => {
  */
 exports.update = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["_id", "name", "path", "meta", "package", "component"])
+    vField(req.body, ["_id", "name", "path", "package", "component", "title", "needLogin"])
+
+    const meta = {
+        title: req.body.title,
+        needLogin: req.body.needLogin
+    }
+
+    delete req.body.title
+    delete req.body.needLogin
+
+    req.body.meta = meta
 
     const route = await Route.findByIdAndUpdate(req.body._id, req.body, { new: true })
     if (!route) throw new Error('路由不存在')
@@ -93,7 +114,17 @@ exports.update = async (req, res, next) => {
  */
 exports.updateNeedLogin = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["_id", "meta"])
+    vField(req.body, ["_id", "title", "needLogin"])
+
+    const meta = {
+        title: req.body.title,
+        needLogin: req.body.needLogin
+    }
+
+    delete req.body.title
+    delete req.body.needLogin
+
+    req.body.meta = meta
 
     const route = await Route.findByIdAndUpdate(req.body._id, req.body, { new: true })
     if (!route) throw new Error('路由不存在')

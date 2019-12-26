@@ -7,18 +7,17 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    subs: [{
-        name: {
-            type: String,
-            required: true
-        },
-        subs: [{
-            name: {
-                type: String,
-                required: true
-            }
-        }]
-    }],
+    key: {
+        type: String,
+        required: true
+    },
+    desc: {
+        type: String,
+        required: true
+    },
+    parentID: {
+        type: mongoose.Schema.Types.ObjectId
+    },
     flag: {
         type: Boolean,
         default: false
@@ -31,7 +30,8 @@ const categorySchema = new mongoose.Schema({
 categorySchema.virtual('articles', {
     ref: 'Article',
     localField: '_id',
-    foreignField: 'category'
+    foreignField: 'category',
+    count: true
 })
 
 const Category = mongoose.model('Category', categorySchema)
