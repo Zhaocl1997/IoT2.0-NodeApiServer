@@ -13,6 +13,7 @@
     "url": "https://github.com/Zhaocl1997/IoT2.0-server"
   },
   "dependencies": {
+    "@alicloud/pop-core": "^1.7.9",
     "@hapi/joi": "^16.1.4",
     "ali-oss": "^6.3.1",
     "bcryptjs": "^2.4.3",
@@ -45,7 +46,7 @@
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js",
     "prod": "env-cmd -f ./config/prod.env node src/index.js",
     "pm2": "env-cmd -f ./config/prod.env pm2 start src/index.js",
-    "pub": "D:\\projects\\IOT2.0\\command\\Server.bat",
+    "pub": "D:\\projects\\IOT2.0\\command\\server\\Server.bat",
     "test": "env-cmd -f ./config/test.env jest --watchAll --runInBand"
   },
   "jest": {

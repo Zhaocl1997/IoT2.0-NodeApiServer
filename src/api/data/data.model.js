@@ -24,14 +24,6 @@ const dataSchema = new mongoose.Schema({
     versionKey: false
 })
 
-
-/**
- *  post中间件：数据保存后,socket发布一个事件
- */
-dataSchema.post('save', (doc) => {
-    require('../../helper/socket').onNewData(doc)
-})
-
 const Data = mongoose.model('Data', dataSchema)
 
 module.exports = Data

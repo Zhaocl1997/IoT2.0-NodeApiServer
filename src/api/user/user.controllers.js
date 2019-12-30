@@ -8,7 +8,9 @@ const { vField } = require('../../helper/validate')
 const { index_params } = require('../../helper/public')
 const { svgOptions, svgPath, avatarPath } = require('../../helper/config')
 const getWather = require('../../utils/weather')
+const sendValidateEmail = require('../../utils/email')
 
+const bcrypt = require('bcryptjs')
 const sharp = require('sharp')
 const svgCaptcha = require('svg-captcha')
 
@@ -57,6 +59,58 @@ exports.login = async (req, res, next) => {
 
     await req.user.populate({ path: 'role', select: 'name' }).execPopulate()
     res.json({ code: "000000", data: { token, user: req.user } })
+}
+
+/**
+ * @method genCode
+ * @param { null } 
+ * @returns { code }
+ * @description public 
+ */
+exports.gencode = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["email"])
+
+    // 生成6位随机验证码
+    const code = parseInt(Math.random() * (999999 - 100000 + 1) + 100000, 10)
+
+    // 发送验证码邮件
+    const hasSendEmail = await sendValidateEmail(req.body.email, code)
+    if (!hasSendEmail) throw new Error('验证码邮件发送失败')
+
+    // 存到session
+    req.session.code = code
+    res.json({ code: "000000", data: { code } })
+}
+
+/**
+ * @method findpass
+ * @param { Object } 
+ * @returns { boolean }
+ * @description public 
+ */
+exports.findpass = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["email", "code", "newPass", "checkPass"])
+
+    const email = req.body.email
+    const code = req.body.code
+    const newPass = req.body.newPass
+    const checkPass = req.body.checkPass
+
+    // 根据email查找用户
+    const user = await User.findOne({ email })
+    if (!user) throw new Error('用户不存在！')
+
+    // 验证
+    if (newPass !== checkPass) throw new Error('两次密码不一致！')
+    if (code !== JSON.stringify(req.session.code)) throw new Error('验证码错误！')
+
+    // 重置密码
+    user.password = newPass
+    await user.save()
+
+    res.json({ code: "000000", data: { data: true } })
 }
 
 /**
@@ -234,17 +288,54 @@ exports.updateStatus = async (req, res, next) => {
  */
 exports.updateInfo = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["_id", "name", "email", "phone", "role", "birth", "gender", "area", "status"])
+    vField(req.body, ["_id", "name", "email", "phone", "birth", "gender", "area"])
 
     // 根据email/phone查找用户 解决email/phone唯一问题
     await User.isExist(req.body)
 
-    // 通过角色名称找到角色
-    const role = await Role.findOne({ name: req.body.role })
-    req.body.role = role._id
-
     const user = await User.findByIdAndUpdate(req.body._id, req.body, { new: true })
     if (!user) throw new Error('用户不存在')
+    res.json({ code: "000000", data: { data: true } })
+}
+
+/**
+ * @method changePass
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description user 
+ */
+exports.changePass = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["oldPass", "newPass", "conPass"])
+
+    const oldPass = req.body.oldPass
+    const newPass = req.body.newPass
+    const conPass = req.body.conPass
+
+    if (newPass !== conPass) throw new Error('两次输入密码不一致！')
+    if (oldPass === newPass) throw new Error('新密码不可以和原密码一致！')
+
+    const isMatch = await bcrypt.compare(oldPass, req.user.password)
+    if (!isMatch) throw new Error('原密码错误！')
+
+    req.user.password = newPass
+    await req.user.save()
+    res.json({ code: "000000", data: { data: true } })
+}
+
+/**
+ * @method unlock
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description user 
+ */
+exports.unlock = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["pass"])
+
+    const isMatch = await bcrypt.compare(req.body.pass, req.user.password)
+    if (!isMatch) throw new Error('密码错误')
+
     res.json({ code: "000000", data: { data: true } })
 }
 
@@ -261,5 +352,25 @@ exports.delete = async (req, res, next) => {
     const user = await User.findById(req.body._id)
     if (!user) throw new Error('用户不存在')
     await user.remove()
+    res.json({ code: '000000', data: { data: true } })
+}
+
+/**
+ * @method deleteMany
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description admin
+ */
+exports.deleteMany = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
+    const users = await User.find({ _id: { $in: req.body._id } })
+    if (users.length !== req.body._id.length) throw new Error('删除失败')
+
+    for (let i = 0; i < users.length; i++) {
+        const user = users[i];
+        await user.remove() // 触发钩子逻辑删除连带设备
+    }
     res.json({ code: '000000', data: { data: true } })
 }

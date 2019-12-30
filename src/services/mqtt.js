@@ -55,6 +55,17 @@ const topic = (mac) => {
   }
 }
 
+// new Data
+const newData = async (log, message) => {
+  const data = JSON.parse(message.toString())
+  const device = await Device.findOne({ macAddress: data.macAddress })
+  delete data.macAddress
+  const result = new Data({ ...data, cB: device._id })
+  await result.save()
+  require('../helper/socket').onNewData({ macAddress: device.macAddress, data: result.data })
+  console.log(`${log}_Data Saved`)
+}
+
 // mqtt connect
 client.on('connect', () => {
   console.log(chalk.black.bgWhite(clientId + ' connected to ' + host + ' on port ' + port))
@@ -84,23 +95,13 @@ client.on('message', async (topicMsg, message) => {
       client.publish(topic(mac).publish.feedback, mac)
     } break;
 
-    case topic().subscribe.dht11: {
-      const data = JSON.parse(message.toString())
-      const device = await Device.findOne({ macAddress: data.macAddress })
-      delete data.macAddress
-      const result = new Data({ ...data, cB: device._id })
-      await result.save()
-      console.log('DHT11_Data Saved')
-    } break;
+    case topic().subscribe.dht11:
+      await newData('DHT11', message)
+      break;
 
-    case topic().subscribe.camera: {
-      const data = JSON.parse(message.toString())      
-      const device = await Device.findOne({ macAddress: data.macAddress })
-      delete data.macAddress
-      const result = new Data({ ...data, cB: device._id })
-      await result.save()
-      console.log('Camera_Data Saved')
-    } break;
+    case topic().subscribe.camera:
+      await newData('CAMERA', message)
+      break;
 
     default:
       break;

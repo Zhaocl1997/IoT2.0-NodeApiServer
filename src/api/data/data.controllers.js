@@ -233,8 +233,8 @@ exports.indexByMac = async (req, res, next) => {
 
     const device = await Device.findOne({ macAddress: req.body.macAddress })
 
-    const total = await Data.find({ cB: device._id }).countDocuments()
-    const data = await Data.find({ cB: device._id })
+    const total = await Data.find({ cB: device._id, flag: false }).countDocuments()
+    const data = await Data.find({ cB: device._id, flag: false })
         .limit(base.limit).skip(base.skip).sort({ cA: -1 })
 
     res.json({ code: "000000", data: { data, total } })
@@ -278,5 +278,26 @@ exports.delete = async (req, res, next) => {
     const data = await Data.findById(req.body._id)
     data.flag = true
     await data.save()
+    res.json({ code: '000000', data: { data: true } })
+}
+
+/**
+ * @method deleteMany
+ * @param { Object } 
+ * @returns { Boolean }
+ * @description admin 
+ */
+exports.deleteMany = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
+    const datas = await Data.find({ _id: { $in: req.body._id } })
+    if (datas.length !== req.body._id.length) throw new Error('删除失败')
+
+    for (let i = 0; i < datas.length; i++) {
+        const data = datas[i];
+        data.flag = true
+        await data.save()
+    }
     res.json({ code: '000000', data: { data: true } })
 }

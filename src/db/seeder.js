@@ -20,7 +20,9 @@ const Data = require('../api/data/data.model')
 const Article = require('../api/article/article.model')
 const Category = require('../api/category/category.model')
 
-const MONGO_URI = 'mongodb://192.168.0.112:27017/iot-api'
+const MONGO_URI = process.argv[3] === '-dev'
+    ? 'mongodb://192.168.0.112:27017/iot-api'
+    : 'mongodb://127.0.0.1:27017/iot-api'
 
 // Connect to DB
 mongoose.connect(MONGO_URI, {

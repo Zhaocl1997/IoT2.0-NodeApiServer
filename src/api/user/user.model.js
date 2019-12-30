@@ -102,7 +102,7 @@ userSchema.methods.generateAuthToken = async function () {
 userSchema.statics.findAndCheck = async (email, phone, pwd) => {
     const user = await User.findOne(
         { $or: [{ email }, { phone }] },
-        '_id name role status password'
+        '_id name role status avatar password'
     )
     if (!user) throw new Error('用户不存在')
 
@@ -138,8 +138,13 @@ userSchema.pre('save', async function (next) {
  */
 userSchema.pre('remove', async function (next) {
     const user = this
+
     const avatarName = `${user._id}.png`
-    await Device.deleteMany({ createdBy: user._id })
+    const devices = await Device.find({ createdBy: user._id })
+    for (let i = 0; i < devices.length; i++) {
+        const device = devices[i];
+        await device.remove()
+    }
 
     // if (user.avatar) {
     //     fs.unlink(avatarPath + avatarName, (err) => {

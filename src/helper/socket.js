@@ -14,7 +14,7 @@ exports.register = (_socket) => {
 // emit 新数据事件
 exports.onNewData = (doc) => {
     if (!socket) return;
-    socket.emit('data:save:' + doc.macAddress, doc)
+    socket.emit('data:save:' + doc.macAddress, doc.data)
 }
 
 // emit 新设备事件

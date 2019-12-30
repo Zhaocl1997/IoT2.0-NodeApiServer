@@ -2,7 +2,7 @@
 
 const { vField } = require('../../helper/validate')
 const { getColInfo, exportDB, importDB } = require('../../db/db')
-const { listDir, uploadDB, downloadDB } = require('../../helper/oss')
+const { listDir, uploadDB, downloadDB } = require('../../helper/OSS')
 
 /**
  * @method index

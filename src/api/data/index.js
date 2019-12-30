@@ -16,5 +16,6 @@ router.post('/onLED', [base, vDataMW], controller.onLED)
 // admin
 router.post('/create', admin, controller.create)
 router.post('/delete', admin, controller.delete)
+router.post('/deleteMany', admin, controller.deleteMany)
 
 module.exports = router

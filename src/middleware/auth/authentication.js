@@ -8,7 +8,7 @@ const authenticationMW = async (req, res, next) => {
     try {
         const token = req.header('Authorization').replace('Bearer ', '')
         const decoded = jwt.verify(token, process.env.JWT_SERECT)
-        const user = await User.findOne({ _id: decoded._id }, '-createdAt -updatedAt')
+        const user = await User.findOne({ _id: decoded._id })
         if (!user) throw new Error('您的帐号不存在哦~')
 
         req.user = user
