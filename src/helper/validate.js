@@ -36,7 +36,8 @@ const vUser = (user) => {
         area: Joi.array().length(3).items(Joi.string()).error(new Error('用户地址字段格式错误')),
         avatar: Joi.string().trim().lowercase().error(new Error('用户头像字段格式错误')),
         status: Joi.boolean().error(new Error('用户状态字段格式错误')),
-        verifyCode: Joi.string().trim().length(4).error(new Error('验证码字段格式错误')),
+        captcha: Joi.string().trim().length(4).error(new Error('验证码字段格式错误')),
+        code: Joi.string().trim().length(6).error(new Error('验证码字段格式错误'))
     })
     return schema.validate(user)
 }

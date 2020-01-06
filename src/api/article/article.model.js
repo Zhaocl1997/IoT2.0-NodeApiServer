@@ -7,6 +7,10 @@ const articleSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    intro: {
+        type: String,
+        required: true
+    },
     content: {
         type: String,
         required: true
@@ -25,11 +29,11 @@ const articleSchema = new mongoose.Schema({
         required: true,
         ref: 'User'
     },
-    solve: {
+    like: {
         type: Number,
         default: 0
     },
-    unsolve: {
+    read: {
         type: Number,
         default: 0
     },
@@ -40,6 +44,15 @@ const articleSchema = new mongoose.Schema({
 }, {
     timestamps: true,
     versionKey: false
+})
+
+/**
+ * 虚拟属性,对应user_like_article
+ */
+articleSchema.virtual('isLiked', {
+    ref: 'UserLikeArticle',
+    localField: '_id',
+    foreignField: 'articleId'
 })
 
 const Article = mongoose.model('Article', articleSchema)

@@ -6,10 +6,12 @@ const base = require('../../middleware/base')
 
 const router = new express.Router()
 
+// public
+router.post('/index', controller.index)
+router.post('/read', controller.read)
+
 // base
-router.post('/index', base, controller.index)
 router.post('/create', base, controller.create)
-router.post('/read', base, controller.read)
 router.post('/update', base, controller.update)
 router.post('/delete', base, controller.delete)
 

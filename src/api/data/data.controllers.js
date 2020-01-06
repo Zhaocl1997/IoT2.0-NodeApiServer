@@ -205,10 +205,11 @@ exports.index = async (req, res, next) => {
                         { 'userID': userID },
                         { 'devicetype': deviceType },
                         { '_id': deviceID },
-                        { 'data.cA': { '$gte': new Date(start), '$lte': new Date(stop) } }
+                        { 'data.cA': { '$gt': new Date(start), '$lt': new Date(stop) } }
                     ]
                 }
             }
+            console.table(filter.$match.$and[3])
 
             const data = await data_aggregate(page, sort, filter)
             res.json({ code: "000000", data })

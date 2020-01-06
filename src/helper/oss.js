@@ -3,10 +3,10 @@
 const path = require('path')
 const OSS = require('ali-oss')
 
-const region = process.env.OSS_REGION
-const accessKeyId = process.env.OSS_KEYID
-const accessKeySecret = process.env.OSS_KEYSECRET
-const bucket = process.env.OSS_BUCKET
+const region = process.env.ALI_OSS_REGION
+const accessKeyId = process.env.ALI_KEYID
+const accessKeySecret = process.env.ALI_KEYSECRET
+const bucket = process.env.ALI_OSS_BUCKET
 
 // 实例化OSS
 const client = new OSS({

@@ -5,12 +5,14 @@ const Role = require('../../api/role/role.model')
 
 exports.loginMW = async (req, res, next) => {
     // 验证码
-    if (req.body.verifyCode && req.session.randomcode !== req.body.verifyCode) {
+    if (req.body.captcha && req.session.captcha !== req.body.captcha) {
         throw new Error('验证码输入错误')
     }
 
+    delete req.body.captcha
+
     // 通过凭据(email/phone)查找用户并验证密码
-    const user = await User.findAndCheck(req.body.email, req.body.phone, req.body.password)
+    const user = await User.findAndCheck(req.body)
 
     // 验证角色状态
     const role = await Role.findById(user.role)

@@ -99,15 +99,17 @@ userSchema.methods.generateAuthToken = async function () {
  * 静态方法：通过凭据(email/phone)查找用户并验证密码
  * 登录使用
  */
-userSchema.statics.findAndCheck = async (email, phone, pwd) => {
+userSchema.statics.findAndCheck = async (body) => {
     const user = await User.findOne(
-        { $or: [{ email }, { phone }] },
+        { $or: [{ email: body.email }, { phone: body.phone }] },
         '_id name role status avatar password'
     )
     if (!user) throw new Error('用户不存在')
 
-    const isMatch = await bcrypt.compare(pwd, user.password)
-    if (!isMatch) throw new Error('密码输入错误')
+    if (body.password) {
+        const isMatch = await bcrypt.compare(body.password, user.password)
+        if (!isMatch) throw new Error('密码输入错误')
+    }
 
     return user
 }

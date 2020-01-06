@@ -45,3 +45,18 @@ exports.delete = async (req, res, next) => {
     await log.remove()
     res.json({ code: "000000", data: { data: true } })
 }
+
+/**
+ * @method deleteMany
+ * @param { Object }
+ * @returns { Boolean }
+ * @description admin
+ */
+exports.deleteMany = async (req, res, next) => {
+    // 验证字段
+    vField(req.body, ["_id"])
+
+    await Logger.deleteMany({ _id: { $in: req.body._id } })
+
+    res.json({ code: "000000", data: { data: true } })
+}

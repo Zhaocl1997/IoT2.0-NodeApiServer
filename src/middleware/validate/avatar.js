@@ -4,6 +4,7 @@ const multer = require('multer')
 const { avatarPath } = require('../../helper/config')
 const base = require('../base')
 
+// 存储路径
 const storage = multer.diskStorage({
     destination(req, file, cb) {
         cb(null, avatarPath)
@@ -14,10 +15,12 @@ const storage = multer.diskStorage({
     }
 })
 
+// 大小限制为1M
 const limits = {
     fileSize: 1000000
 }
 
+// 只能上传图片
 const fileFilter = (req, file, cb) => {
     if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
         return cb(new Error('请上传图片'))

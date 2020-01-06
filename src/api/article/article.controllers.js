@@ -26,9 +26,18 @@ exports.index = async (req, res, next) => {
     const total = await Article.find(filter).countDocuments()
     const data = await Article.find(filter)
         .skip(base.skip).limit(base.limit).sort(base.sort)
-        .populate({ path: 'author', select: 'name' })
+        .populate({ path: 'author', select: 'name avatar' })
         .populate({ path: "category", select: 'name' })
+        .populate({ path: "isLiked" })
         .lean()
+
+    // 判断当前用户是否喜欢某篇文章
+    if (req.user) {
+        data.forEach(item => item['isLiked'] = item['isLiked'].some(i => i.userId.toString() === req.user._id.toString()))
+    } else {
+        data.forEach(item => item['isLiked'] = false)
+    }
+
 
     res.json({ code: "000000", data: { total, data } })
 }
@@ -37,11 +46,11 @@ exports.index = async (req, res, next) => {
  * @method create
  * @param { Object }
  * @returns { Boolean }
- * @description public 
+ * @description user 
  */
 exports.create = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["title", "tag", "category", "content"])
+    vField(req.body, ["title", "intro", "tag", "category", "content"])
 
     await Article.create({
         ...req.body,
@@ -60,7 +69,13 @@ exports.read = async (req, res, next) => {
     // 验证字段
     vField(req.body, ["_id"])
 
-    const article = await Article.findById(req.body._id)
+    const article = await Article
+        .findById(req.body._id)
+        .populate({ path: 'author', select: 'name avatar' })
+        .populate({ path: "category", select: 'name' })
+        .populate({ path: "isLiked" })
+    article.read++
+    await article.save()
     if (!article) throw new Error('文章不存在')
     res.json({ code: '000000', data: { data: article } })
 }
@@ -69,11 +84,11 @@ exports.read = async (req, res, next) => {
  * @method update
  * @param { Object } 
  * @returns { Boolean }
- * @description public 
+ * @description user 
  */
 exports.update = async (req, res, next) => {
     // 验证字段
-    vField(req.body, ["_id", "title", "category", "tag", "content"])
+    vField(req.body, ["_id", "title", "intro", "category", "tag", "content"])
 
     const article = await Article.findOneAndUpdate({
         _id: req.body._id,
@@ -87,7 +102,7 @@ exports.update = async (req, res, next) => {
  * @method delete
  * @param { Object }
  * @returns { Boolean }
- * @description public
+ * @description user
  */
 exports.delete = async (req, res, next) => {
     // 验证字段

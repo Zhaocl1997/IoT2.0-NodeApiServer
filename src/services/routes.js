@@ -16,4 +16,5 @@ module.exports = (app) => {
     app.use('/api/v1/category', require('../api/category'))
     app.use('/api/v1/db', require('../api/db'))
     app.use('/api/v1/logger', require('../api/logger'))
+    app.use('/api/v1/user_like_article', require('../api/user_like_article'))
 }
